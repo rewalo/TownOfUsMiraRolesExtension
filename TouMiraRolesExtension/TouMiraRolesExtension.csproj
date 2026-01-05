@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <DebugType>embedded</DebugType>
+
+        <VersionPrefix>1.0.0</VersionPrefix>
+        <VersionSuffix>dev</VersionSuffix>
+        <RootNamespace>TouMiraRolesExtension</RootNamespace>
+        <Description>Extension mod for Town of Us Mira that renames Trapper to Revealer and adds a new Trapper role with Clueless modifier.</Description>
+        <NoWarn>$(NoWarn);1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\**\*.*"/>
+    </ItemGroup>
+
+    <Import Project="../AmongUs.props"/>
+
+    <Target Name="Copy" AfterTargets="Build" Condition="'$(AmongUs)' != ''">
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(AmongUs)/BepInEx/plugins/" UseSymboliclinksIfPossible="true" />
+    </Target>
+</Project>
+

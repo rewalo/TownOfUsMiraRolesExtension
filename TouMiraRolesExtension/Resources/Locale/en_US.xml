@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <!-- Renamed Trapper to Revealer - these override the base mod's Trapper strings -->
+  <string name="TouRoleRevealer">Revealer</string>
+  <string name="TouRoleRevealerIntroBlurb">Place traps to reveal roles of players who stay in them.</string>
+  <string name="TouRoleRevealerTabDescription">Place traps around the map. Players who stay in traps long enough will have their roles revealed to you at the next meeting.</string>
+  <string name="TouRoleRevealerWikiDescription">The Revealer is a Crewmate role that can place traps around the map. When players stay in a trap for a certain amount of time, their roles are revealed to the Revealer at the next meeting.</string>
+  <string name="TouRoleRevealerTrap">Trap</string>
+  <string name="TouRoleRevealerTrapWikiDescription">Place a trap at your current location. Players who stay in the trap for the required duration will have their roles revealed to you.</string>
+  <string name="TouRoleRevealerNoPlayers">No players were caught in your traps.</string>
+  <string name="TouRoleRevealerNotEnoughPLayers">Not enough players were caught in your traps.</string>
+  <string name="TouRoleRevealerRolesCaught">Roles caught in traps:</string>
+  <string name="TouRoleRevealerMessageTitle">Trap Report</string>
+
+  <!-- Trapper Role -->
+  <string name="ExtensionRoleTrapper">Trapper</string>
+  <string name="ExtensionRoleTrapperIntroBlurb">Trap vents to catch venters.</string>
+  <string name="ExtensionRoleTrapperTabDescription">Place traps on vents. Players who use trapped vents will be immobilized for a duration.</string>
+  <string name="ExtensionRoleTrapperWikiDescription">The Trapper is a Crewmate role that can place traps on vents. When players use a trapped vent, they are immobilized for a duration and the Trapper is notified.</string>
+  <string name="ExtensionRoleTrapperTrap">Trap</string>
+  <string name="ExtensionRoleTrapperTrapWikiDescription">Place a trap on a vent. Players who use this vent will be caught and immobilized.</string>
+  <string name="ExtensionRoleTrapperPlaced">Trapped a vent in &lt;room&gt;!</string>
+  <string name="ExtensionRoleTrapperTriggered">Your trap was triggered in &lt;room&gt;!</string>
+  <string name="ExtensionRoleTrapperCaught">You were caught in a trap in &lt;room&gt;!</string>
+
+  <!-- Trapper Options -->
+  <string name="ExtensionOptionTrapperTrapCooldown">Trap Cooldown</string>
+  <string name="ExtensionOptionTrapperTrappeduration">Trap Duration</string>
+  <string name="ExtensionOptionTrapperArrowDuration">Arrow Duration</string>
+  <string name="ExtensionOptionTrapperMaxTraps">Max Number of Traps</string>
+  <string name="ExtensionOptionTrapperTrapRoundsLast">Trap Rounds Last</string>
+  <string name="ExtensionOptionTrapperGetMoreFromTasks">Get More Traps From Tasks</string>
+  <string name="ExtensionOptionTrapperTasksUntilMoreTraps">Tasks Until More Traps</string>
+  <string name="ExtensionOptionTrapperTrapTargets">Trap Targets</string>
+  <string name="ExtensionOptionTrapperTrapTargetsEnumImpostors">Impostors</string>
+  <string name="ExtensionOptionTrapperTrapTargetsEnumImpostorsAndNeutrals">Impostors and Neutrals</string>
+  <string name="ExtensionOptionTrapperTrapTargetsEnumAll">All</string>
+
+  <!-- Clueless Modifier -->
+  <string name="ExtensionModifierClueless">Clueless</string>
+  <string name="ExtensionModifierCluelessIntroBlurb">No task guidance.</string>
+  <string name="ExtensionModifierCluelessTabDescription">You have no task list, task arrows, or map task locations. Tasks still function normally and contribute to the task bar.</string>
+  <string name="ExtensionModifierCluelessWikiDescription">The Clueless modifier removes all task guidance including the task list, task arrows/markers, and map task locations. Tasks still function normally and contribute to the task bar.</string>
+  <string name="ExtensionModifierCluelessAmount">Clueless Amount</string>
+  <string name="ExtensionModifierCluelessChance">Clueless Chance</string>
+</resources>

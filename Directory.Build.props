@@ -1,0 +1,45 @@
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <DebugType>embedded</DebugType>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ImplicitUsings>true</ImplicitUsings>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+
+        <VersionPrefix>1.0.0</VersionPrefix>
+        <VersionSuffix>dev</VersionSuffix>
+
+        <Authors>TouMiraRolesExtension</Authors>
+        <Company>Among Us Avengers</Company>
+
+        <!-- SourceLink -->
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <AnalysisMode>recommended</AnalysisMode>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="$(MSBuildThisFileDirectory)\stylecop.json" Link="stylecop.json" Visible="false"/>
+
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.12.0.118525">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)\stylecop.ruleset</CodeAnalysisRuleSet>
+    </PropertyGroup>
+</Project>
+
