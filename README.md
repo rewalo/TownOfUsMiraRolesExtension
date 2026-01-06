@@ -31,9 +31,9 @@ This extension mod:
 ## Requirements
 
 - .NET 6.0
-- Town of Us: Mira 1.5.0-beta.1 or later
-- MiraAPI 0.3.5 or later
-- Reactor 2.5.0-ci.371 or later
+- Town of Us: Mira 1.5.0 or later
+- MiraAPI 0.3.6 or later
+- Reactor 2.5.0 or later
 
 ## License
 
