@@ -39,8 +39,8 @@
   <!-- Clueless Modifier -->
   <string name="ExtensionModifierClueless">Clueless</string>
   <string name="ExtensionModifierCluelessIntroBlurb">No task guidance.</string>
-  <string name="ExtensionModifierCluelessTabDescription">You have no task list, task arrows, or map task locations. Tasks still function normally and contribute to the task bar.</string>
-  <string name="ExtensionModifierCluelessWikiDescription">The Clueless modifier removes all task guidance including the task list, task arrows/markers, and map task locations. Tasks still function normally and contribute to the task bar.</string>
+  <string name="ExtensionModifierCluelessTabDescription">You cannot see your task list, task markers, or task locations on the map.</string>
+  <string name="ExtensionModifierCluelessWikiDescription">You cannot see your task list, task markers, or task locations on the map. Tasks still spawn normally and count toward the task bar.</string>
   <string name="ExtensionModifierCluelessAmount">Clueless Amount</string>
   <string name="ExtensionModifierCluelessChance">Clueless Chance</string>
 </resources>

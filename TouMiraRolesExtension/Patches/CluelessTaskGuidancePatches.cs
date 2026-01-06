@@ -1,12 +1,11 @@
+using System.Reflection;
 using HarmonyLib;
 using MiraAPI.Modifiers;
 using Reactor.Utilities.Extensions;
 using TouMiraRolesExtension.Modifiers.Universal;
 using UnityEngine;
 
-#pragma warning disable SA1313 // Parameter names should begin with lower-case letter
-
-namespace TouMiraRolesExtension.Patches;
+namespace TownOfUs.Patches.Misc;
 
 /// <summary>
 /// Clueless modifier: hides task list, task arrows/markers, and map task overlay for the local player.
@@ -14,7 +13,7 @@ namespace TouMiraRolesExtension.Patches;
 [HarmonyPatch]
 public static class CluelessTaskGuidancePatches
 {
-    private static bool LocalIsClueless()
+    internal static bool LocalIsClueless()
     {
         return PlayerControl.LocalPlayer != null &&
                PlayerControl.LocalPlayer.HasModifier<CluelessModifier>();
@@ -29,14 +28,12 @@ public static class CluelessTaskGuidancePatches
             return true;
         }
 
-        // Only suppress the vanilla task panel (don't break TOU's separate "RolePanel").
         if (HudManager.Instance != null && HudManager.Instance.TaskPanel == __instance)
         {
             if (__instance.taskText != null)
             {
                 __instance.taskText.text = string.Empty;
             }
-
             return false;
         }
 
@@ -52,13 +49,11 @@ public static class CluelessTaskGuidancePatches
             return true;
         }
 
-        // Only disable guidance for the local player's own tasks.
         if (__instance.Owner != PlayerControl.LocalPlayer)
         {
             return true;
         }
 
-        // Best-effort cleanup: if an arrow already exists, destroy it so it can't linger.
         TryDestroyExistingTaskArrow(__instance);
         return false;
     }
@@ -90,12 +85,11 @@ public static class CluelessTaskGuidancePatches
                 arrowObj.gameObject.Destroy();
             }
 
-            // Null out the field so other callers can't reuse it.
             field.SetValue(task, null);
         }
         catch
         {
-            // ignored: IL2CPP field names may differ by AU version
+            // ignored
         }
     }
 
@@ -103,6 +97,7 @@ public static class CluelessTaskGuidancePatches
     [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.ShowSabotageMap))]
     [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.ShowCountOverlay))]
     [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)]
     public static void MapBehaviourShowPostfix(MapBehaviour __instance)
     {
         if (!LocalIsClueless() || __instance == null)
@@ -110,7 +105,56 @@ public static class CluelessTaskGuidancePatches
             return;
         }
 
-        // Hide task locations on the map for Clueless.
         __instance.taskOverlay?.Hide();
+    }
+
+    [HarmonyPatch]
+    public static class TaskOverlayShowPatch
+    {
+        private static System.Type? _taskOverlayType;
+
+        private static System.Type? GetTaskOverlayType()
+        {
+            if (_taskOverlayType != null)
+            {
+                return _taskOverlayType;
+            }
+
+            _taskOverlayType = typeof(MapBehaviour).Assembly.GetType("TaskOverlay") ??
+                               typeof(MapBehaviour).Assembly.GetType("AmongUs.GameOptions.TaskOverlay") ??
+                               typeof(MapBehaviour).Assembly.GetTypes()
+                                   .FirstOrDefault(t => t.Name == "TaskOverlay" && t.GetMethod("Show") != null);
+
+            return _taskOverlayType;
+        }
+
+        [HarmonyPatch]
+        [HarmonyPrefix]
+        public static bool TaskOverlayShowPrefix()
+        {
+            if (LocalIsClueless())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            var taskOverlayType = GetTaskOverlayType();
+            if (taskOverlayType == null)
+            {
+                return Enumerable.Empty<MethodBase>();
+            }
+
+            var showMethod = AccessTools.Method(taskOverlayType, "Show");
+            if (showMethod != null)
+            {
+                return new[] { showMethod };
+            }
+
+            return Enumerable.Empty<MethodBase>();
+        }
     }
 }

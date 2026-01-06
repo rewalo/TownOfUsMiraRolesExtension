@@ -19,7 +19,11 @@ namespace TouMiraRolesExtension.Patches;
 [HarmonyPatch]
 public static class CluelessIntroInfoPatch
 {
+#pragma warning disable CS8601 // Possible null reference assignment.
+#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
     private static readonly FieldInfo ModifierTextField = typeof(TownOfUsEventHandlers).GetField("ModifierText", BindingFlags.NonPublic | BindingFlags.Static);
+#pragma warning restore S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning restore CS8601 // Possible null reference assignment.
 
     [HarmonyPatch(typeof(TownOfUsEventHandlers), nameof(TownOfUsEventHandlers.RunModChecks))]
     [HarmonyPostfix]
