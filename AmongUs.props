@@ -18,5 +18,3 @@
         <EmbeddedResource Include="TownOfUs\Resources\*.bundle" Exclude="Resources\*.png"/>
     </ItemGroup>
 </Project>
-
-

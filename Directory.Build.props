@@ -42,5 +42,3 @@
         <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)\stylecop.ruleset</CodeAnalysisRuleSet>
     </PropertyGroup>
 </Project>
-
-
