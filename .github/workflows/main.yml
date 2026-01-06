@@ -7,8 +7,6 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - uses: actions/cache@v4
         with:
@@ -22,7 +20,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 6.0.x
 
       - name: Run the Cake script
         uses: cake-build/cake-action@v3
@@ -31,16 +29,11 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: TownOfUsMira.dll
-          path: TownOfUs/bin/Release/TownOfUsMira.dll
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: TownOfUsMira.nupkg
-          path: TownOfUs/bin/Release/TownOfUsMira.*.nupkg
+          name: TouMiraRolesExtension.dll
+          path: TouMiraRolesExtension/bin/Release/net6.0/TouMiraRolesExtension.dll
 
       - uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
           draft: true
-          files: TownOfUs/bin/Release/TownOfUsMira.dll
+          files: TouMiraRolesExtension/bin/Release/net6.0/TouMiraRolesExtension.dll
