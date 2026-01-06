@@ -1,8 +1,10 @@
-using System.Reflection;
+using System.Text.RegularExpressions;
 using HarmonyLib;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using Reactor.Utilities.Extensions;
 using TouMiraRolesExtension.Modifiers.Universal;
+using TouMiraRolesExtension.Options.Modifiers;
 using UnityEngine;
 
 namespace TownOfUs.Patches.Misc;
@@ -20,24 +22,129 @@ public static class CluelessTaskGuidancePatches
     }
 
     [HarmonyPatch(typeof(TaskPanelBehaviour), nameof(TaskPanelBehaviour.SetTaskText))]
-    [HarmonyPrefix]
-    public static bool TaskPanelSetTaskTextPrefix(TaskPanelBehaviour __instance)
+    [HarmonyPostfix]
+    public static void SetTaskTextPostfix(TaskPanelBehaviour __instance)
     {
         if (!LocalIsClueless())
         {
-            return true;
+            return;
         }
 
-        if (HudManager.Instance != null && HudManager.Instance.TaskPanel == __instance)
+        if (HudManager.Instance == null || HudManager.Instance.TaskPanel != __instance)
         {
-            if (__instance.taskText != null)
-            {
-                __instance.taskText.text = string.Empty;
-            }
-            return false;
+            return;
         }
 
-        return true;
+        if (__instance?.taskText == null)
+        {
+            return;
+        }
+
+        var original = __instance.taskText.text;
+        if (string.IsNullOrEmpty(original))
+        {
+            return;
+        }
+
+        var lines = original.Split('\n');
+        var filtered = new List<string>(lines.Length);
+
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                filtered.Add(line);
+                continue;
+            }
+
+            var trimmedLine = line.TrimStart();
+            if (trimmedLine.StartsWith("<color=", StringComparison.Ordinal))
+            {
+                filtered.Add(line);
+            }
+            else
+            {
+                var censoredLine = CensorTaskLine(line);
+                if (!string.IsNullOrEmpty(censoredLine))
+                {
+                    filtered.Add(censoredLine);
+                }
+            }
+        }
+
+        __instance.taskText.text = string.Join("\n", filtered);
+    }
+
+    private static string CensorTaskLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return line;
+        }
+
+        var openingColorTag = string.Empty;
+        var closingColorTag = string.Empty;
+        
+        var openingMatch = Regex.Match(line, @"<color=#[0-9A-Fa-f]{8}>");
+        if (openingMatch.Success)
+        {
+            openingColorTag = openingMatch.Value;
+        }
+
+        if (line.Contains("</color>"))
+        {
+            closingColorTag = "</color>";
+        }
+
+        var contentWithoutColors = Regex.Replace(line, @"<color=#[0-9A-Fa-f]{8}>|</color>", string.Empty);
+        
+        var leadingWhitespace = string.Empty;
+        var trailingWhitespace = string.Empty;
+        
+        if (contentWithoutColors.Length > 0)
+        {
+            var trimmedStart = contentWithoutColors.TrimStart();
+            leadingWhitespace = contentWithoutColors.Substring(0, contentWithoutColors.Length - trimmedStart.Length);
+            
+            var trimmedEnd = trimmedStart.TrimEnd();
+            trailingWhitespace = trimmedStart.Substring(trimmedEnd.Length);
+            
+            contentWithoutColors = trimmedEnd;
+        }
+
+        var contentLength = contentWithoutColors.Length;
+        string censoredContent;
+        
+        if (contentLength == 0)
+        {
+            censoredContent = string.Empty;
+        }
+        else
+        {
+            var censorType = OptionGroupSingleton<UniversalModifierOptions>.Instance.CluelessCensorType.Value;
+            
+            switch (censorType)
+            {
+                case CluelessCensorType.WhiteBars:
+                    censoredContent = new string('█', contentLength);
+                    break;
+                case CluelessCensorType.Asterisks:
+                    censoredContent = new string('*', contentLength);
+                    break;
+                case CluelessCensorType.QuestionMarks:
+                    censoredContent = new string('?', contentLength);
+                    break;
+                case CluelessCensorType.Remove:
+                    return string.Empty;
+                default:
+                    censoredContent = new string('?', contentLength);
+                    break;
+            }
+        }
+
+        var result = leadingWhitespace + openingColorTag + censoredContent + closingColorTag + trailingWhitespace;
+
+        return result;
     }
 
     [HarmonyPatch(typeof(NormalPlayerTask), nameof(NormalPlayerTask.UpdateArrowAndLocation))]
@@ -108,53 +215,4 @@ public static class CluelessTaskGuidancePatches
         __instance.taskOverlay?.Hide();
     }
 
-    [HarmonyPatch]
-    public static class TaskOverlayShowPatch
-    {
-        private static System.Type? _taskOverlayType;
-
-        private static System.Type? GetTaskOverlayType()
-        {
-            if (_taskOverlayType != null)
-            {
-                return _taskOverlayType;
-            }
-
-            _taskOverlayType = typeof(MapBehaviour).Assembly.GetType("TaskOverlay") ??
-                               typeof(MapBehaviour).Assembly.GetType("AmongUs.GameOptions.TaskOverlay") ??
-                               typeof(MapBehaviour).Assembly.GetTypes()
-                                   .FirstOrDefault(t => t.Name == "TaskOverlay" && t.GetMethod("Show") != null);
-
-            return _taskOverlayType;
-        }
-
-        [HarmonyPatch]
-        [HarmonyPrefix]
-        public static bool TaskOverlayShowPrefix()
-        {
-            if (LocalIsClueless())
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static IEnumerable<MethodBase> TargetMethods()
-        {
-            var taskOverlayType = GetTaskOverlayType();
-            if (taskOverlayType == null)
-            {
-                return Enumerable.Empty<MethodBase>();
-            }
-
-            var showMethod = AccessTools.Method(taskOverlayType, "Show");
-            if (showMethod != null)
-            {
-                return new[] { showMethod };
-            }
-
-            return Enumerable.Empty<MethodBase>();
-        }
-    }
 }

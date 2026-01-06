@@ -43,4 +43,9 @@
   <string name="ExtensionModifierCluelessWikiDescription">You cannot see your task list, task markers, or task locations on the map. Tasks still spawn normally and count toward the task bar.</string>
   <string name="ExtensionModifierCluelessAmount">Clueless Amount</string>
   <string name="ExtensionModifierCluelessChance">Clueless Chance</string>
+  <string name="ExtensionModifierCluelessCensorType">Clueless Censor Type</string>
+  <string name="ExtensionModifierCluelessCensorTypeEnumWhiteBars">White Bars</string>
+  <string name="ExtensionModifierCluelessCensorTypeEnumAsterisks">Asterisks</string>
+  <string name="ExtensionModifierCluelessCensorTypeEnumQuestionMarks">Question Marks</string>
+  <string name="ExtensionModifierCluelessCensorTypeEnumRemove">Remove</string>
 </resources>

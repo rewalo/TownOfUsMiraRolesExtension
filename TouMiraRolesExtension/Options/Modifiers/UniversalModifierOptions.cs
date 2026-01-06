@@ -3,8 +3,17 @@ using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using TownOfUs.Modules.Localization;
+using CluelessCensorTypeEnum = TouMiraRolesExtension.Options.Modifiers.CluelessCensorType;
 
 namespace TouMiraRolesExtension.Options.Modifiers;
+
+public enum CluelessCensorType
+{
+    WhiteBars,
+    Asterisks,
+    QuestionMarks,
+    Remove
+}
 
 public sealed class UniversalModifierOptions : AbstractOptionGroup
 {
@@ -17,6 +26,20 @@ public sealed class UniversalModifierOptions : AbstractOptionGroup
 
     public ModdedNumberOption CluelessChance { get; } =
         new("ExtensionModifierCluelessChance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent)
+        {
+            Visible = () => OptionGroupSingleton<UniversalModifierOptions>.Instance.CluelessAmount > 0
+        };
+
+    private static readonly string[] CluelessCensorTypeValues =
+    [
+        "ExtensionModifierCluelessCensorTypeEnumWhiteBars",
+        "ExtensionModifierCluelessCensorTypeEnumAsterisks",
+        "ExtensionModifierCluelessCensorTypeEnumQuestionMarks",
+        "ExtensionModifierCluelessCensorTypeEnumRemove"
+    ];
+
+    public ModdedEnumOption<CluelessCensorType> CluelessCensorType { get; } =
+        new("ExtensionModifierCluelessCensorType", CluelessCensorTypeEnum.QuestionMarks, CluelessCensorTypeValues)
         {
             Visible = () => OptionGroupSingleton<UniversalModifierOptions>.Instance.CluelessAmount > 0
         };
