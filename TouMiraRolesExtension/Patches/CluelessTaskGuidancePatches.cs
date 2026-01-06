@@ -84,7 +84,7 @@ public static class CluelessTaskGuidancePatches
 
         var openingColorTag = string.Empty;
         var closingColorTag = string.Empty;
-        
+
         var openingMatch = Regex.Match(line, @"<color=#[0-9A-Fa-f]{8}>");
         if (openingMatch.Success)
         {
@@ -97,24 +97,24 @@ public static class CluelessTaskGuidancePatches
         }
 
         var contentWithoutColors = Regex.Replace(line, @"<color=#[0-9A-Fa-f]{8}>|</color>", string.Empty);
-        
+
         var leadingWhitespace = string.Empty;
         var trailingWhitespace = string.Empty;
-        
+
         if (contentWithoutColors.Length > 0)
         {
             var trimmedStart = contentWithoutColors.TrimStart();
             leadingWhitespace = contentWithoutColors.Substring(0, contentWithoutColors.Length - trimmedStart.Length);
-            
+
             var trimmedEnd = trimmedStart.TrimEnd();
             trailingWhitespace = trimmedStart.Substring(trimmedEnd.Length);
-            
+
             contentWithoutColors = trimmedEnd;
         }
 
         var contentLength = contentWithoutColors.Length;
         string censoredContent;
-        
+
         if (contentLength == 0)
         {
             censoredContent = string.Empty;
@@ -122,7 +122,7 @@ public static class CluelessTaskGuidancePatches
         else
         {
             var censorType = OptionGroupSingleton<UniversalModifierOptions>.Instance.CluelessCensorType.Value;
-            
+
             switch (censorType)
             {
                 case CluelessCensorType.WhiteBars:
@@ -213,6 +213,21 @@ public static class CluelessTaskGuidancePatches
         }
 
         __instance.taskOverlay?.Hide();
+    }
+
+    [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.FixedUpdate))]
+    [HarmonyPostfix]
+    public static void MapBehaviourFixedUpdatePostfix(MapBehaviour __instance)
+    {
+        if (!LocalIsClueless() || __instance == null)
+        {
+            return;
+        }
+
+        if (__instance.taskOverlay != null && __instance.taskOverlay.isActiveAndEnabled)
+        {
+            __instance.taskOverlay.Hide();
+        }
     }
 
 }
