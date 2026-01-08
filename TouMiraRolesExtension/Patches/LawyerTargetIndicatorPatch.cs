@@ -34,13 +34,13 @@ public static class LawyerTargetIndicatorPatch
         }
 
         var genOpt = OptionGroupSingleton<GeneralOptions>.Instance;
-        
+
         if (player.HasModifier<LawyerTargetModifier>(x => x.OwnerId == PlayerControl.LocalPlayer.PlayerId) &&
             PlayerControl.LocalPlayer.IsRole<LawyerRole>())
         {
             __result += $"<color=#{TownOfUsColors.Lawyer.ToHtmlStringRGBA()}> L</color>";
         }
-        
+
         if (player.HasModifier<LawyerTargetModifier>() && PlayerControl.LocalPlayer.HasDied() &&
             genOpt != null && genOpt.TheDeadKnow && !hidden)
         {
@@ -60,7 +60,7 @@ public static class LawyerClientIntroPatch
     {
         var instance = @event.IntroCutscene;
         var localPlayer = PlayerControl.LocalPlayer;
-        
+
         if (localPlayer == null)
         {
             return;
@@ -83,7 +83,7 @@ public static class LawyerClientIntroPatch
         var lawyerInfo = TouLocale.GetParsed("ExtensionRoleLawyerClientDescription")
             .Replace("<lawyer>", lawyer.Data.PlayerName);
         var color = TownOfUsColors.Lawyer.ToHtmlStringRGBA();
-        
+
         instance.RoleBlurbText.text += $"\n<size=2.5><color=#{color}>{lawyerInfo}</color></size>";
     }
 }
@@ -99,7 +99,7 @@ public static class LawyerClientIntroBeginPatch
     {
         var cutscene = @event.IntroCutscene;
         var localPlayer = PlayerControl.LocalPlayer;
-        
+
         if (localPlayer == null || cutscene == null)
         {
             return;
@@ -125,7 +125,7 @@ public static class LawyerClientIntroBeginPatch
     private static System.Collections.IEnumerator AddLawyerInfoToIntro(IntroCutscene cutscene, PlayerControl lawyer)
     {
         yield return new WaitForSeconds(0.02f);
-        
+
         if (cutscene == null || lawyer?.Data == null)
         {
             yield break;
@@ -134,7 +134,7 @@ public static class LawyerClientIntroBeginPatch
         var lawyerInfo = TouLocale.GetParsed("ExtensionRoleLawyerClientDescription")
             .Replace("<lawyer>", lawyer.Data.PlayerName);
         var color = TownOfUsColors.Lawyer.ToHtmlStringRGBA();
-        
+
         cutscene.RoleBlurbText.text += $"\n<size=2.5><color=#{color}>{lawyerInfo}</color></size>";
     }
 }
@@ -197,9 +197,9 @@ public static class LawyerKillerIntroPatch
         var impostorCount = Helpers.GetAlivePlayers().Count(x => x.IsImpostor());
         var lawyerIndex = impostorCount;
         var maxDepth = impostorCount + 1;
-        
+
         var lawyerPlayer = __instance.CreatePlayer(lawyerIndex, maxDepth, lawyer.Data, true);
-        
+
         if (lawyerPlayer != null)
         {
             lawyerPlayer.SetNameColor(TownOfUsColors.Lawyer);
@@ -369,7 +369,7 @@ public static class LawyerClientTabTextPatch
         var lawyerInfo = TouLocale.GetParsed("ExtensionRoleLawyerClientTabDescription")
             .Replace("<lawyer>", lawyer.Data.PlayerName);
         var color = TownOfUsColors.Lawyer.ToHtmlStringRGBA();
-        
+
         __result.AppendLine();
         __result.AppendLine(TownOfUsPlugin.Culture, $"<size=70%><color=#{color}>{lawyerInfo}</color></size>");
     }
