@@ -7,11 +7,13 @@ An extension mod for [Town of Us: Mira](https://github.com/AU-Avengers/TOU-Mira)
 This extension mod:
 1. **Renames** the existing Trapper role (ground traps that reveal roles) to **Revealer**
 2. **Adds** a new **Trapper** role (vent traps that immobilize players)
-3. **Adds** the **Clueless** modifier
+3. **Adds** the **Lawyer** role (neutral role that protects a client)
+4. **Adds** the **Clueless** modifier
 
 ### Roles
 - **Revealer** (Crewmate, renamed from Trapper): Place traps around the map to reveal roles of players who stay in them long enough.
 - **Trapper** (Crewmate, new): Place traps on vents that immobilize players who use them.
+- **Lawyer** (Neutral Evil): Win by keeping your assigned client (a killer role) from being voted out. If your client gets voted out, you lose.
 
 ### Modifiers
 - **Clueless** (Universal): Removes all task guidance (task list, task arrows/markers, and map task locations). Tasks still function normally and contribute to the task bar.
@@ -44,4 +46,3 @@ This software is distributed under the GNU GPLv3 License.
 This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are property of Innersloth LLC.
 
 © Innersloth LLC.
-

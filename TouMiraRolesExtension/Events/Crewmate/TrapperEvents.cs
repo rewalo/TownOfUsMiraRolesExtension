@@ -1,4 +1,3 @@
-using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -9,7 +8,6 @@ using TouMiraRolesExtension.Buttons.Crewmate;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Options.Roles.Crewmate;
 using TouMiraRolesExtension.Roles.Crewmate;
-using TownOfUs.Buttons;
 
 namespace TouMiraRolesExtension.Events.Crewmate;
 
@@ -66,7 +64,6 @@ public static class TrapperEvents
     [RegisterEvent]
     public static void EjectionEventHandler(EjectionEvent @event)
     {
-        // "Rounds" advance on meeting resolution; match Plumber's pattern.
         VentTrapSystem.DecrementRoundsAndRemoveExpired();
     }
 }

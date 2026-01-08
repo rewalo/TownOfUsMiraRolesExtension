@@ -2,7 +2,6 @@ using System.Reflection;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
-using Reactor.Utilities.Extensions;
 using TMPro;
 using TouMiraRolesExtension.Modifiers.Universal;
 using TownOfUs.Events;

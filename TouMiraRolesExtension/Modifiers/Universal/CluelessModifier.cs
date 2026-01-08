@@ -1,5 +1,4 @@
 using MiraAPI.GameOptions;
-using MiraAPI.Modifiers;
 using MiraAPI.Utilities.Assets;
 using TownOfUs.Modifiers.Game;
 using TownOfUs.Modules.Localization;
@@ -32,7 +31,6 @@ public sealed class CluelessModifier : UniversalGameModifier, IWikiDiscoverable
                + MiscUtils.AppendOptionsText(GetType());
     }
 
-    // Intentionally left null to avoid requiring a new bundle sprite for compilation/runtime safety.
     public override LoadableAsset<Sprite>? ModifierIcon => null;
     public override Color FreeplayFileColor => new Color32(180, 180, 180, 255);
 

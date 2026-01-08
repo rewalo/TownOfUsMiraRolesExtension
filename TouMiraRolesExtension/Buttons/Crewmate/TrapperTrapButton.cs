@@ -5,7 +5,6 @@ using MiraAPI.Utilities.Assets;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Options.Roles.Crewmate;
 using TouMiraRolesExtension.Roles.Crewmate;
-using TownOfUs;
 using TownOfUs.Assets;
 using TownOfUs.Buttons;
 using TownOfUs.Modules.Localization;
