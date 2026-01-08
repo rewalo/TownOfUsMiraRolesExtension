@@ -249,7 +249,18 @@ public static class LawyerNeutralKillerIntroPatch
             return;
         }
 
-        _ = lawyerModifier;
+        var lawyer = PlayerControl.AllPlayerControls.ToArray()
+            .FirstOrDefault(p => p != null && p.PlayerId == lawyerModifier.OwnerId && p.IsRole<LawyerRole>());
+
+        if (lawyer == null || lawyer.Data == null)
+        {
+            return;
+        }
+
+        var team = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
+        team.Add(localPlayer);
+        team.Add(lawyer);
+        teamToDisplay = team;
     }
 
     [HarmonyPostfix]
@@ -277,25 +288,6 @@ public static class LawyerNeutralKillerIntroPatch
         if (lawyerModifier == null)
         {
             return;
-        }
-
-        var lawyer = PlayerControl.AllPlayerControls.ToArray()
-            .FirstOrDefault(p => p != null && p.PlayerId == lawyerModifier.OwnerId && p.IsRole<LawyerRole>());
-
-        if (lawyer == null || lawyer.Data == null)
-        {
-            return;
-        }
-
-        var teamCount = 1;
-        var lawyerIndex = teamCount;
-        var maxDepth = teamCount + 1;
-
-        var lawyerPlayer = __instance.CreatePlayer(lawyerIndex, maxDepth, lawyer.Data, false);
-
-        if (lawyerPlayer != null)
-        {
-            lawyerPlayer.SetNameColor(TownOfUsColors.Lawyer);
         }
 
         __instance.TeamTitle.text = TouLocale.Get("NeutralKeyword").ToUpperInvariant();
