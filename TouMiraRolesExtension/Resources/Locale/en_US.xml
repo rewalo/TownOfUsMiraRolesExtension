@@ -51,9 +51,8 @@
 
   <!-- Lawyer Role -->
   <string name="ExtensionRoleLawyer">Lawyer</string>
-  <string name="ExtensionRoleLawyerIntroBlurb">Keep your client alive!</string>
+  <string name="ExtensionRoleLawyerIntroBlurb">Defend your client to win!</string>
   <string name="ExtensionRoleLawyerTabDescription">Defend \%client\%. If they get voted out, you lose!</string>
-  <string name="ExtensionRoleLawyerMissingClientDescription">Defend your client to win.</string>
   <string name="ExtensionRoleLawyerWikiDescription">The Lawyer is a Neutral Evil role that wins by keeping their assigned client (a killer role) from being voted out. If their client gets voted out, the Lawyer loses.</string>
   
   <!-- Lawyer Options -->

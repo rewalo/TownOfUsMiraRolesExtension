@@ -97,21 +97,22 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             MiscUtils.AppendOptionsText(GetType());
     }
 
-    private static string _missingClientDesc = TouLocale.GetParsed("ExtensionRoleLawyerMissingClientDescription");
-    private static string _clientIntroDesc = TouLocale.GetParsed("ExtensionRoleLawyerIntroBlurb");
-    private static string _clientTabDesc = TouLocale.GetParsed("ExtensionRoleLawyerTabDescription");
-
     private string ClientString(bool capitalize = false)
     {
-        var desc = capitalize ? _missingClientDesc.ToTitleCase() : _missingClientDesc;
+        string desc;
         if (Client != null)
         {
-            var clientDesc = capitalize ? _clientIntroDesc : _clientTabDesc;
-            desc = capitalize ? clientDesc.ToTitleCase().Replace("<Client>", "<client>") : clientDesc;
-            desc = desc.Replace("<client>", $"{Client.Data.PlayerName}");
+            desc = capitalize 
+                ? TouLocale.GetParsed("ExtensionRoleLawyerIntroBlurb")
+                : TouLocale.GetParsed("ExtensionRoleLawyerTabDescription");
+            desc = desc.Replace("%client%", Client.Data.PlayerName);
+        }
+        else
+        {
+            desc = TouLocale.GetParsed("ExtensionRoleLawyerIntroBlurb");
         }
 
-        return desc;
+        return capitalize ? desc.ToTitleCase() : desc;
     }
 
     public Color RoleColor => TownOfUsColors.Lawyer;
