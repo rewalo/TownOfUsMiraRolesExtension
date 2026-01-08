@@ -1,3 +1,4 @@
+using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameEnd;
 using MiraAPI.Modifiers.Types;
 using TouMiraRolesExtension.GameOver;
@@ -11,7 +12,8 @@ public sealed class LawyerTargetModifier : GameModifier
 {
     public override string ModifierName => "Lawyer Client";
     public override bool HideOnUi => true;
-    
+    [HideFromIl2Cpp] public bool IsHiddenFromList => true;
+
     public byte OwnerId { get; set; }
 
     public LawyerTargetModifier() : this(0)

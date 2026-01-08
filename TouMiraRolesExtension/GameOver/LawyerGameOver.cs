@@ -4,6 +4,7 @@ using Reactor.Utilities.Extensions;
 using TownOfUs.Modules;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Modifiers;
+using TouMiraRolesExtension.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using TownOfUs.Modules.Localization;
@@ -28,7 +29,8 @@ public sealed class LawyerGameOver : CustomGameOver
             return winners.Any(w => w.Object == playerControl);
         }
 
-        if (playerControl.HasModifier<LawyerTargetModifier>())
+        // Use LawyerUtils to check if player is a client of any lawyer
+        if (LawyerUtils.IsClientOfAnyLawyer(playerControl))
         {
             return winners.Any(w => w.Object == playerControl);
         }
@@ -38,8 +40,13 @@ public sealed class LawyerGameOver : CustomGameOver
 
     public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        var client = PlayerControl.AllPlayerControls.ToArray()
-            .FirstOrDefault(p => p != null && p.HasModifier<LawyerTargetModifier>());
+        // Find the winning lawyer and their SPECIFIC client
+        var winningLawyer = PlayerControl.AllPlayerControls.ToArray()
+            .FirstOrDefault(p => p != null && p.IsRole<LawyerRole>());
+        
+        var client = winningLawyer != null 
+            ? LawyerUtils.GetClientForLawyer(winningLawyer)
+            : null;
         
         var (winColor, winText) = DetermineWinCondition(client);
         SetWinningFaction(winColor, winText);

@@ -52,7 +52,7 @@
   <!-- Lawyer Role -->
   <string name="ExtensionRoleLawyer">Lawyer</string>
   <string name="ExtensionRoleLawyerIntroBlurb">Defend your client to win!</string>
-  <string name="ExtensionRoleLawyerTabDescription">Defend \%client\%. If they get voted out, you lose!</string>
+  <string name="ExtensionRoleLawyerTabDescription">Defend &lt;client&gt;. If they get voted out, you lose!</string>
   <string name="ExtensionRoleLawyerWikiDescription">The Lawyer is a Neutral Evil role that wins by keeping their assigned client (a killer role) from being voted out. If their client gets voted out, the Lawyer loses.</string>
   
   <!-- Lawyer Options -->
@@ -67,4 +67,12 @@
   <!-- Lawyer Client Info -->
   <string name="ExtensionRoleLawyerClientDescription">Your lawyer is &lt;lawyer&gt;.</string>
   <string name="ExtensionRoleLawyerClientTabDescription">Your lawyer is &lt;lawyer&gt;.</string>
+  
+  <!-- Lawyer Chat -->
+  <string name="ExtensionLawyerChatTitle">&lt;player&gt; (Lawyer)</string>
+  <string name="ExtensionLawyerClientChatTitle">&lt;player&gt; (Client)</string>
+  
+  <!-- Lawyer Death Messages -->
+  <string name="ExtensionLawyerDiedWithClient">Failed to Defend</string>
+  <string name="ExtensionLawyerDiedClientDeath">Case Closed</string>
 </resources>

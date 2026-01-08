@@ -1,6 +1,7 @@
-using System.Collections;
+using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Modifiers.Types;
 using Reactor.Utilities;
+using System.Collections;
 using TownOfUs.Utilities;
 using UnityEngine;
 
@@ -19,6 +20,8 @@ public sealed class TrappedOnVentModifier(Vector2 ventTopPos, float durationSeco
 
     public Vector2 VentTopPos { get; } = ventTopPos;
     public int VentId { get; } = ventId;
+
+    [HideFromIl2Cpp] public bool IsHiddenFromList => true;
 
     public override void OnActivate()
     {

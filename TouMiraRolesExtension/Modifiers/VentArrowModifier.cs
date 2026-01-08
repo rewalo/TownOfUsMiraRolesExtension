@@ -1,3 +1,4 @@
+using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Modifiers.Types;
 using Reactor.Utilities.Extensions;
 using TownOfUs.Utilities;
@@ -16,6 +17,8 @@ public sealed class VentArrowModifier(Vector3 target, Color color, float duratio
     public override bool AutoStart => true;
     public override bool RemoveOnComplete => true;
     public override float Duration => Mathf.Max(0.05f, durationSeconds);
+
+    [HideFromIl2Cpp] public bool IsHiddenFromList => true;
 
     public Vector3 Target { get; } = target;
     public Color Color { get; } = color;

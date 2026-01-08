@@ -4,5 +4,7 @@ public enum ExtensionRpc : uint
 {
     TrapperPlaceTrap,
     TrapperTriggerTrap,
-    SetLawyerClient
+    SetLawyerClient,
+    SendLawyerChat,
+    SendClientChat
 }

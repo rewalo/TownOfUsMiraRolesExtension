@@ -1,8 +1,10 @@
+using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.GameOptions;
+using TouMiraRolesExtension.Options.Roles.Neutral;
+using TouMiraRolesExtension.Roles.Neutral;
+using TouMiraRolesExtension.Utilities;
 using TownOfUs.Modifiers;
 using TownOfUs.Utilities;
-using TouMiraRolesExtension.Roles.Neutral;
-using TouMiraRolesExtension.Options.Roles.Neutral;
-using MiraAPI.GameOptions;
 
 namespace TouMiraRolesExtension.Modifiers;
 
@@ -12,6 +14,8 @@ namespace TouMiraRolesExtension.Modifiers;
 public sealed class ClientRevealModifier : RevealModifier
 {
     private readonly RoleBehaviour _role;
+
+    [HideFromIl2Cpp] public bool IsHiddenFromList => true;
 
     public ClientRevealModifier(RoleBehaviour role)
         : base((int)ChangeRoleResult.Nothing, true, role)
@@ -47,8 +51,7 @@ public sealed class ClientRevealModifier : RevealModifier
             return;
         }
 
-        var lawyerRole = localPlayer.GetRole<LawyerRole>();
-        if (lawyerRole?.Client == null || lawyerRole.Client.PlayerId != Player.PlayerId)
+        if (!LawyerUtils.HasLawyerClientRelationship(localPlayer, Player))
         {
             Visible = false;
             return;

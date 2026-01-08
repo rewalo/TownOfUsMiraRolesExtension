@@ -4,7 +4,11 @@ using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Options.Roles.Neutral;
+using TownOfUs.Events;
+using TownOfUs.Modifiers;
+using TownOfUs.Modifiers.Game;
 using TownOfUs.Utilities;
+using TownOfUs.Modules.Localization;
 
 namespace TouMiraRolesExtension.Events.Neutral;
 
@@ -38,6 +42,11 @@ public static class LawyerEvents
                 
                 if (OptionGroupSingleton<LawyerOptions>.Instance.GetVotedOutWithClient)
                 {
+                    DeathHandlerModifier.UpdateDeathHandlerImmediate(lawyer.Player, 
+                        TouLocale.Get("ExtensionLawyerDiedWithClient"),
+                        DeathEventHandlers.CurrentRound, 
+                        DeathHandlerOverride.SetFalse,
+                        lockInfo: DeathHandlerOverride.SetTrue);
                     lawyer.Player.Exiled();
                 }
                 

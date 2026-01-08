@@ -13,6 +13,7 @@ using Reactor.Utilities;
 using TownOfUs.Modifiers;
 using TownOfUs.Modifiers.Game;
 using TownOfUs.Modifiers.Neutral;
+using TownOfUs.Events;
 using TownOfUs.Options;
 using TownOfUs.Options.Roles.Neutral;
 using TownOfUs.Roles.Crewmate;
@@ -21,6 +22,7 @@ using TownOfUs.Utilities;
 using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Networking;
 using TouMiraRolesExtension.Options.Roles.Neutral;
+using TouMiraRolesExtension.Utilities;
 using UnityEngine;
 using Random = System.Random;
 using TownOfUs.Extensions;
@@ -33,6 +35,7 @@ using TownOfUs.Assets;
 using MiraAPI.GameEnd;
 using TouMiraRolesExtension.GameOver;
 using TownOfUs.GameOver;
+using MiraAPI.Networking;
 
 namespace TouMiraRolesExtension.Roles.Neutral;
 
@@ -55,18 +58,21 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         }
 
         var lawyers = PlayerControl.AllPlayerControls.ToArray()
-            .Where(x => x.IsRole<LawyerRole>() && !x.HasDied());
+            .Where(x => x.IsRole<LawyerRole>() && !x.HasDied())
+            .ToList();
+
+        var assignedClients = new HashSet<byte>();
 
         foreach (var lawyer in lawyers)
         {
             var killers = PlayerControl.AllPlayerControls.ToArray()
-                .Where(x => !x.IsRole<LawyerRole>() && !x.HasDied() &&
-                            (x.IsImpostorAligned() || x.Is(RoleAlignment.NeutralKilling)) &&
-                            !x.HasModifier<ExecutionerTargetModifier>() &&
-                            !x.HasModifier<GuardianAngelTargetModifier>() &&
-                            !x.HasModifier<AllianceGameModifier>() &&
-                            !SpectatorRole.TrackedSpectators.Contains(x.Data.PlayerName))
-                .ToList();
+    .Where(x => !x.IsRole<LawyerRole>() && !x.HasDied() &&
+                (x.IsImpostorAligned() || x.Is(RoleAlignment.NeutralKilling)) &&
+                !x.HasModifier<ExecutionerTargetModifier>() &&
+                !x.HasModifier<GuardianAngelTargetModifier>() &&
+                !x.HasModifier<AllianceGameModifier>() &&
+                !SpectatorRole.TrackedSpectators.Contains(x.Data.PlayerName) &&
+                !assignedClients.Contains(x.PlayerId)).ToList();
 
             if (killers.Count > 0)
             {
@@ -74,6 +80,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                 var shuffled = killers.OrderBy(x => rnd.Next()).ToList();
                 var randomTarget = shuffled[0];
 
+                assignedClients.Add(randomTarget.PlayerId);
                 RpcSetLawyerClient(lawyer, randomTarget);
             }
             else
@@ -102,10 +109,10 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         string desc;
         if (Client != null)
         {
-            desc = capitalize 
+            desc = capitalize
                 ? TouLocale.GetParsed("ExtensionRoleLawyerIntroBlurb")
                 : TouLocale.GetParsed("ExtensionRoleLawyerTabDescription");
-            desc = desc.Replace("%client%", Client.Data.PlayerName);
+            desc = desc.Replace("<client>", Client.Data.PlayerName);
         }
         else
         {
@@ -165,9 +172,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
         if (Client == null)
         {
-            Client = ModifierUtils
-                .GetPlayersWithModifier<LawyerTargetModifier>([HideFromIl2Cpp](x) => x.OwnerId == Player.PlayerId)
-                .FirstOrDefault();
+            Client = LawyerUtils.GetClientForLawyer(Player);
         }
 
         if (Client != null)
@@ -177,7 +182,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             {
                 Player.AddModifier<LawyerRevealModifier>(lawyerRole);
             }
-            
+
             if (!Client.HasModifier<ClientRevealModifier>())
             {
                 var clientRole = Client.Data?.Role as RoleBehaviour;
@@ -207,10 +212,11 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         RoleBehaviourStubs.Deinitialize(this, targetPlayer);
         if (TutorialManager.InstanceExists && Player.AmOwner)
         {
-            var players = ModifierUtils
-                .GetPlayersWithModifier<LawyerTargetModifier>([HideFromIl2Cpp](x) => x.OwnerId == Player.PlayerId)
-                .ToList();
-            players.Do(x => x.RpcRemoveModifier<LawyerTargetModifier>());
+            var client = LawyerUtils.GetClientForLawyer(Player);
+            if (client != null)
+            {
+                client.RpcRemoveModifier<LawyerTargetModifier>();
+            }
         }
 
         if (!Player.HasModifier<BasicGhostModifier>() && ClientVoted)
@@ -243,30 +249,30 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         {
             return false;
         }
-        
+
         if (ClientVoted)
         {
             return false;
         }
-        
+
         if (gameOverReason == CustomGameOver.GameOverReason<LawyerGameOver>())
         {
             return true;
         }
-        
+
         if (gameOverReason is GameOverReason.CrewmatesByVote or GameOverReason.CrewmatesByTask
             or GameOverReason.ImpostorDisconnect or GameOverReason.HideAndSeek_CrewmatesByTimer)
         {
             return false;
         }
-        
+
         if (Client.IsImpostorAligned())
         {
             return gameOverReason is GameOverReason.ImpostorsByKill or GameOverReason.ImpostorsBySabotage
-                or GameOverReason.ImpostorsByVote or GameOverReason.CrewmateDisconnect 
+                or GameOverReason.ImpostorsByVote or GameOverReason.CrewmateDisconnect
                 or GameOverReason.HideAndSeek_ImpostorsByKills;
         }
-        
+
         var clientRole = Client.Data?.Role;
         if (clientRole is ICustomRole customRole && customRole.Team == ModdedRoleTeams.Custom)
         {
@@ -274,15 +280,15 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             {
                 return false;
             }
-            
+
             if (gameOverReason is GameOverReason.ImpostorsByKill or GameOverReason.ImpostorsBySabotage
-                or GameOverReason.ImpostorsByVote or GameOverReason.CrewmateDisconnect 
+                or GameOverReason.ImpostorsByVote or GameOverReason.CrewmateDisconnect
                 or GameOverReason.HideAndSeek_ImpostorsByKills)
             {
                 return false;
             }
         }
-        
+
         return false;
     }
 
@@ -298,7 +304,25 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             var dieOnClientDeath = OptionGroupSingleton<LawyerOptions>.Instance.DieOnClientDeath;
             if (dieOnClientDeath)
             {
-                Player.MurderPlayer(Player, MurderResultFlags.Succeeded | MurderResultFlags.DecisionByHost);
+                var showAnim = MeetingHud.Instance == null && ExileController.Instance == null;
+                var murderResultFlags = MurderResultFlags.Succeeded | MurderResultFlags.DecisionByHost;
+
+                DeathHandlerModifier.UpdateDeathHandlerImmediate(Player,
+                    TouLocale.Get("ExtensionLawyerDiedClientDeath"),
+                    DeathEventHandlers.CurrentRound,
+                    (!MeetingHud.Instance && !ExileController.Instance)
+                        ? DeathHandlerOverride.SetTrue
+                        : DeathHandlerOverride.SetFalse,
+                    lockInfo: DeathHandlerOverride.SetTrue);
+
+                Player.CustomMurder(
+                    Player,
+                    murderResultFlags,
+                    false,
+                    showAnim,
+                    false,
+                    showAnim,
+                    false);
                 return;
             }
 
@@ -344,16 +368,33 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             return;
         }
 
+        var existingModifiers = client.GetModifiers<LawyerTargetModifier>().ToList();
+        foreach (var modifier in existingModifiers)
+        {
+            client.RpcRemoveModifier<LawyerTargetModifier>();
+
+            var previousLawyer = PlayerControl.AllPlayerControls.ToArray()
+    .FirstOrDefault(p => p != null && p.PlayerId == modifier.OwnerId && p.IsRole<LawyerRole>());
+            if (previousLawyer != null)
+            {
+                var previousLawyerRole = previousLawyer.GetRole<LawyerRole>();
+                if (previousLawyerRole != null && previousLawyerRole.Client?.PlayerId == client.PlayerId)
+                {
+                    previousLawyerRole.Client = null;
+                }
+            }
+        }
+
         role.Client = client;
 
         client.AddModifier<LawyerTargetModifier>(player.PlayerId);
-        
+
         var lawyerRole = RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<LawyerRole>());
         if (!player.HasModifier<LawyerRevealModifier>())
         {
             player.AddModifier<LawyerRevealModifier>(lawyerRole);
         }
-        
+
         if (!client.HasModifier<ClientRevealModifier>())
         {
             var clientRole = client.Data?.Role as RoleBehaviour;
