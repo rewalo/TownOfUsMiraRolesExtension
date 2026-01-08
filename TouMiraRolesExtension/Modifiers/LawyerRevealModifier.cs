@@ -6,9 +6,16 @@ namespace TouMiraRolesExtension.Modifiers;
 /// <summary>
 /// Reveal modifier for lawyer - makes lawyer's role visible to their client (defendant).
 /// </summary>
-public sealed class LawyerRevealModifier(RoleBehaviour role)
-    : RevealModifier((int)ChangeRoleResult.Nothing, true, role)
+public sealed class LawyerRevealModifier : RevealModifier
 {
+    private readonly RoleBehaviour _role;
+
+    public LawyerRevealModifier(RoleBehaviour role)
+        : base((int)ChangeRoleResult.Nothing, true, role)
+    {
+        _role = role;
+    }
+
     public override string ModifierName => "Lawyer Revealed";
 
     public override void OnActivate()
@@ -16,7 +23,7 @@ public sealed class LawyerRevealModifier(RoleBehaviour role)
         base.OnActivate();
         if (RevealRole && ShownRole == null)
         {
-            ShownRole = role ?? (Player.Data?.Role as RoleBehaviour);
+            ShownRole = _role ?? (Player.Data?.Role as RoleBehaviour);
         }
     }
 

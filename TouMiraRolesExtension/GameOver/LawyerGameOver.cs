@@ -41,39 +41,8 @@ public sealed class LawyerGameOver : CustomGameOver
         var client = PlayerControl.AllPlayerControls.ToArray()
             .FirstOrDefault(p => p != null && p.HasModifier<LawyerTargetModifier>());
         
-        Color winColor;
-        string winText;
-        
-        if (client != null && client.Data != null && client.Data.Role != null)
-        {
-            var clientRole = client.Data.Role;
-            
-            if (client.IsImpostorAligned())
-            {
-                winColor = Palette.ImpostorRed;
-                winText = TouLocale.Get("ImpostorWin", "Impostors Win");
-                GameHistory.WinningFaction = $"<color=#{winColor.ToHtmlStringRGBA()}>{winText}</color>";
-            }
-            else if (clientRole is ICustomRole customRole && customRole.Team == ModdedRoleTeams.Custom)
-            {
-                winColor = clientRole.TeamColor;
-                var roleName = clientRole.GetRoleName();
-                winText = $"{roleName} {TouLocale.Get("Wins", "Wins")}";
-                GameHistory.WinningFaction = $"<color=#{winColor.ToHtmlStringRGBA()}>{winText}</color>";
-            }
-            else
-            {
-                winColor = TownOfUsColors.Lawyer;
-                winText = $"{TouLocale.Get("ExtensionRoleLawyer", "Lawyer")} {TouLocale.Get("ExtensionLawyerWin", "Wins")}";
-                GameHistory.WinningFaction = $"<color=#{winColor.ToHtmlStringRGBA()}>{winText}</color>";
-            }
-        }
-        else
-        {
-            winColor = TownOfUsColors.Lawyer;
-            winText = $"{TouLocale.Get("ExtensionRoleLawyer", "Lawyer")} {TouLocale.Get("ExtensionLawyerWin", "Wins")}";
-            GameHistory.WinningFaction = $"<color=#{winColor.ToHtmlStringRGBA()}>{winText}</color>";
-        }
+        var (winColor, winText) = DetermineWinCondition(client);
+        SetWinningFaction(winColor, winText);
 
         endGameManager.BackgroundBar.material.SetColor(ShaderID.Color, winColor);
 
@@ -88,5 +57,31 @@ public sealed class LawyerGameOver : CustomGameOver
 
         text.transform.position = pos;
         text.text = $"<size=4>{text.text}</size>";
+    }
+
+    private static (Color winColor, string winText) DetermineWinCondition(PlayerControl? client)
+    {
+        if (client != null && client.Data != null && client.Data.Role != null)
+        {
+            var clientRole = client.Data.Role;
+            
+            if (client.IsImpostorAligned())
+            {
+                return (Palette.ImpostorRed, TouLocale.Get("ImpostorWin", "Impostors Win"));
+            }
+            
+            if (clientRole is ICustomRole customRole && customRole.Team == ModdedRoleTeams.Custom)
+            {
+                var roleName = Helpers.GetRoleName(clientRole);
+                return (clientRole.TeamColor, $"{roleName} {TouLocale.Get("Wins", "Wins")}");
+            }
+        }
+        
+        return (TownOfUsColors.Lawyer, $"{TouLocale.Get("ExtensionRoleLawyer", "Lawyer")} {TouLocale.Get("ExtensionLawyerWin", "Wins")}");
+    }
+
+    private static void SetWinningFaction(Color winColor, string winText)
+    {
+        GameHistory.WinningFaction = $"<color=#{winColor.ToHtmlStringRGBA()}>{winText}</color>";
     }
 }

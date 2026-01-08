@@ -249,18 +249,7 @@ public static class LawyerNeutralKillerIntroPatch
             return;
         }
 
-        var lawyer = PlayerControl.AllPlayerControls.ToArray()
-            .FirstOrDefault(p => p != null && p.PlayerId == lawyerModifier.OwnerId && p.IsRole<LawyerRole>());
-
-        if (lawyer == null || lawyer.Data == null)
-        {
-            return;
-        }
-
-        var team = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-        team.Add(localPlayer);
-        team.Add(lawyer);
-        teamToDisplay = team;
+        _ = lawyerModifier;
     }
 
     [HarmonyPostfix]
@@ -288,6 +277,25 @@ public static class LawyerNeutralKillerIntroPatch
         if (lawyerModifier == null)
         {
             return;
+        }
+
+        var lawyer = PlayerControl.AllPlayerControls.ToArray()
+            .FirstOrDefault(p => p != null && p.PlayerId == lawyerModifier.OwnerId && p.IsRole<LawyerRole>());
+
+        if (lawyer == null || lawyer.Data == null)
+        {
+            return;
+        }
+
+        var teamCount = 1;
+        var lawyerIndex = teamCount;
+        var maxDepth = teamCount + 1;
+
+        var lawyerPlayer = __instance.CreatePlayer(lawyerIndex, maxDepth, lawyer.Data, false);
+
+        if (lawyerPlayer != null)
+        {
+            lawyerPlayer.SetNameColor(TownOfUsColors.Lawyer);
         }
 
         __instance.TeamTitle.text = TouLocale.Get("NeutralKeyword").ToUpperInvariant();
@@ -336,10 +344,10 @@ public static class LawyerClientTabTextPatch
     [HarmonyPostfix]
     public static void SetTabTextPostfix(ref StringBuilder __result, ICustomRole role)
     {
-        AddLawyerInfoToTabText(ref __result, role);
+        AddLawyerInfoToTabText(ref __result);
     }
 
-    private static void AddLawyerInfoToTabText(ref StringBuilder __result, ICustomRole role)
+    private static void AddLawyerInfoToTabText(ref StringBuilder __result)
     {
         var localPlayer = PlayerControl.LocalPlayer;
         if (localPlayer == null || localPlayer.Data == null)

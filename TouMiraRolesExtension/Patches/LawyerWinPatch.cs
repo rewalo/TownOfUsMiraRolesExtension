@@ -35,11 +35,10 @@ public static class ExtensionLawyerWinPatch
         if (winningLawyers.Count > 0)
         {
             var lawyer = winningLawyers[0];
-            if (lawyer.Player != null && lawyer.Player.Data != null && 
+            if (lawyer?.Player != null && lawyer.Player.Data != null && 
                 lawyer.Client != null && lawyer.Client.Data != null)
             {
                 var client = lawyer.Client;
-                var clientRole = client.Data?.Role;
                 
                 CustomGameOver.Trigger<LawyerGameOver>([lawyer.Player.Data, client.Data]);
                 

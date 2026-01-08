@@ -86,14 +86,14 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
     public RoleBehaviour CrewVariant => RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<SnitchRole>());
     public DoomableType DoomHintType => DoomableType.Trickster;
     public string LocaleKey => "Lawyer";
-    public string RoleName => TouLocale.Get($"TouRole{LocaleKey}");
+    public string RoleName => TouLocale.Get($"ExtensionRole{LocaleKey}");
     public string RoleDescription => ClientString(true);
     public string RoleLongDescription => ClientString();
 
     public string GetAdvancedDescription()
     {
         return
-            TouLocale.GetParsed($"TouRole{LocaleKey}WikiDescription") +
+            TouLocale.GetParsed($"ExtensionRole{LocaleKey}WikiDescription") +
             MiscUtils.AppendOptionsText(GetType());
     }
 
@@ -180,7 +180,10 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             if (!Client.HasModifier<ClientRevealModifier>())
             {
                 var clientRole = Client.Data?.Role as RoleBehaviour;
-                Client.AddModifier<ClientRevealModifier>(clientRole);
+                if (clientRole != null)
+                {
+                    Client.AddModifier<ClientRevealModifier>(clientRole);
+                }
             }
         }
 
@@ -353,7 +356,10 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         if (!client.HasModifier<ClientRevealModifier>())
         {
             var clientRole = client.Data?.Role as RoleBehaviour;
-            client.AddModifier<ClientRevealModifier>(clientRole);
+            if (clientRole != null)
+            {
+                client.AddModifier<ClientRevealModifier>(clientRole);
+            }
         }
     }
 }

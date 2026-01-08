@@ -22,8 +22,8 @@ public sealed class LawyerOptions : AbstractOptionGroup<LawyerRole>
     public bool DieOnClientDeath { get; set; }
 
     [ModdedToggleOption("ExtensionOptionLawyerGetVotedOutWithClient")]
-    public bool GetVotedOutWithClient { get; set; }
+    public bool GetVotedOutWithClient { get; set; } = true;
 
     [ModdedToggleOption("ExtensionOptionLawyerCanSeeClientRole")]
-    public bool CanSeeClientRole { get; set; } = false;
+    public bool CanSeeClientRole { get; set; } = true;
 }
