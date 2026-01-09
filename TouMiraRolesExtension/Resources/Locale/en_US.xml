@@ -75,4 +75,27 @@
   <!-- Lawyer Death Messages -->
   <string name="ExtensionLawyerDiedWithClient">Failed to Defend</string>
   <string name="ExtensionLawyerDiedClientDeath">Case Closed</string>
+  
+  <!-- Serial Killer Role -->
+  <string name="ExtensionRoleSerialKiller">Serial Killer</string>
+  <string name="ExtensionRoleSerialKillerIntroBlurb">Kill everyone, win alone.</string>
+  <string name="ExtensionRoleSerialKillerTabDescription">Kill everyone to win alone.\%nl\%You can kill players in vents, but you'll lose the ability to vent after doing so.</string>
+  <string name="ExtensionRoleSerialKillerWikiDescription">The Serial Killer is a Neutral Killing role whose only objective is to kill everyone and win alone. The Serial Killer can optionally kill players who are in vents with them, but loses the ability to vent for the rest of the game after doing so.</string>
+  
+  <!-- Serial Killer Options -->
+  <string name="ExtensionOptionSerialKillerCanReportBodies">Can Report Bodies</string>
+  <string name="ExtensionOptionSerialKillerVentKillTargets">Vent Kill Targets</string>
+  <string name="ExtensionOptionSerialKillerVentKillTargetsEnumImpostors">Impostors</string>
+  <string name="ExtensionOptionSerialKillerVentKillTargetsEnumImpNK">Impostors + Neutral Killers</string>
+  <string name="ExtensionOptionSerialKillerVentKillTargetsEnumImpNeutrals">Impostors + Neutrals</string>
+  <string name="ExtensionOptionSerialKillerVentKillTargetsEnumAny">Any</string>
+  <string name="ExtensionOptionSerialKillerManiacMode">Maniac Mode</string>
+  <string name="ExtensionOptionSerialKillerManiacTimer">Maniac Timer</string>
+  <string name="ExtensionOptionSerialKillerManiacCooldown">Kill Cooldown</string>
+  
+  <!-- Serial Killer Maniac Modifier -->
+  <string name="ExtensionModifierSerialKillerManiac">Maniac</string>
+
+  <!-- Serial Killer Death Message -->
+  <string name="DiedToSerialKiller">Murdered</string>
 </resources>
