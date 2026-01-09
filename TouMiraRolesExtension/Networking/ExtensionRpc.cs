@@ -6,5 +6,7 @@ public enum ExtensionRpc : uint
     TrapperTriggerTrap,
     SetLawyerClient,
     SendLawyerChat,
-    SendClientChat
+    SendClientChat,
+    WitchSpell,
+    WitchSpellNotification
 }

@@ -8,12 +8,16 @@ This extension mod:
 1. **Renames** the existing Trapper role (ground traps that reveal roles) to **Revealer**
 2. **Adds** a new **Trapper** role (vent traps that immobilize players)
 3. **Adds** the **Lawyer** role (neutral role that protects a client)
-4. **Adds** the **Clueless** modifier
+4. **Adds** the **Witch** role (impostor power role that curses players)
+5. **Adds** the **Serial Killer** role (neutral killing role)
+6. **Adds** the **Clueless** modifier
 
 ### Roles
 - **Revealer** (Crewmate, renamed from Trapper): Place traps around the map to reveal roles of players who stay in them long enough.
 - **Trapper** (Crewmate, new): Place traps on vents that immobilize players who use them.
 - **Lawyer** (Neutral Evil): Win by keeping your assigned client (a killer role) from being voted out. If your client gets voted out, you lose.
+- **Witch** (Impostor Power): Cast spells on players to curse them. Spellbound players are highlighted in the next meeting and die after a configured amount of meetings. If the Witch dies, gets exiled, or is guessed, all spellbound players survive.
+- **Serial Killer** (Neutral Killing): Kill everyone to win alone. Can optionally kill players who are in vents with them, but loses the ability to vent for the rest of the game after doing so.
 
 ### Modifiers
 - **Clueless** (Universal): Removes all task guidance (task list, task arrows/markers, and map task locations). Tasks still function normally and contribute to the task bar.
