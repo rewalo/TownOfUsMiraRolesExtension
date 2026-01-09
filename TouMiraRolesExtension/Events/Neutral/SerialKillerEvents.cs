@@ -1,15 +1,15 @@
+using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.Modifiers;
+using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Roles.Neutral;
-using TouMiraRolesExtension.Modifiers;
-using TownOfUs.Utilities;
 using TownOfUs.Events;
 using TownOfUs.Modifiers;
-using HarmonyLib;
 using TownOfUs.Modules.Localization;
+using TownOfUs.Utilities;
 
 namespace TouMiraRolesExtension.Events.Neutral;
 
@@ -30,7 +30,6 @@ public static class SerialKillerEvents
             return;
         }
 
-        // Clear vent occupancy when player dies
         VentOccupancySystem.ClearForPlayer(victim.PlayerId);
     }
 
@@ -45,16 +44,60 @@ public static class SerialKillerEvents
             return;
         }
 
+        if (SerialKillerVentKillSystem.TryGetVentKillTarget(killer.PlayerId, out var ventTarget) && ventTarget != null && ventTarget.PlayerId == victim.PlayerId)
+        {
+            if (killer.AmOwner && killer.inVent)
+            {
+                if (killer.inVent && Vent.currentVent != null)
+                {
+                    killer.MyPhysics.RpcExitVent(Vent.currentVent.Id);
+                    killer.MyPhysics?.ExitAllVents();
+                }
+
+                killer.inVent = false;
+                Vent.currentVent = null;
+            }
+
+            if (victim.AmOwner && victim.inVent)
+            {
+
+                if (victim.HasDied())
+                {
+                    return;
+                }
+
+                if (victim.inVent && Vent.currentVent != null)
+                {
+                    victim.MyPhysics.RpcExitVent(Vent.currentVent.Id);
+                    victim.MyPhysics?.ExitAllVents();
+                }
+
+                victim.inVent = false;
+                Vent.currentVent = null;
+            }
+
+            VentOccupancySystem.ClearForPlayer(killer.PlayerId);
+            VentOccupancySystem.ClearForPlayer(victim.PlayerId);
+
+            if (!killer.HasModifier<SerialKillerNoVentModifier>())
+            {
+                killer.AddModifier<SerialKillerNoVentModifier>();
+            }
+        }
+
         if (killer.AmOwner)
         {
-            DeathHandlerModifier.UpdateDeathHandlerImmediate(victim,
+            DeathHandlerModifier.UpdateDeathHandlerImmediate(
+                victim,
                 TouLocale.Get("DiedToSerialKiller"),
                 DeathEventHandlers.CurrentRound,
                 (!MeetingHud.Instance && !ExileController.Instance)
                     ? DeathHandlerOverride.SetTrue
                     : DeathHandlerOverride.SetFalse,
-                TouLocale.GetParsed("DiedByStringBasic").Replace("<player>", killer.Data.PlayerName),
-                lockInfo: DeathHandlerOverride.SetTrue);
+                TouLocale.GetParsed("DiedByStringBasic")
+                    .Replace("<player>", killer.Data.PlayerName),
+                lockInfo: DeathHandlerOverride.SetTrue
+            );
         }
     }
 
@@ -75,17 +118,9 @@ public static class SerialKillerEvents
             return;
         }
 
-        if (killer.inVent && SerialKillerVentKillSystem.TryGetVentKillTarget(killer.PlayerId, out var ventTarget))
+        if (SerialKillerVentKillSystem.TryGetVentKillTarget(killer.PlayerId, out var ventTarget) && ventTarget != null && ventTarget.PlayerId == victim.PlayerId)
         {
-            if (ventTarget != null && ventTarget.PlayerId == victim.PlayerId)
-            {
-                if (!killer.HasModifier<SerialKillerNoVentModifier>())
-                {
-                    killer.AddModifier<SerialKillerNoVentModifier>();
-                }
-
-                SerialKillerVentKillSystem.ClearForPlayer(killer.PlayerId);
-            }
+            SerialKillerVentKillSystem.ClearForPlayer(killer.PlayerId);
         }
 
         if (killer.TryGetModifier<SerialKillerManiacModifier>(out var maniacMod))

@@ -146,13 +146,10 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
             }
 
             int? playerVentId = GetPlayerVentId(player);
-            if (playerVentId.HasValue && playerVentId.Value == vent.Id)
+            if (playerVentId.HasValue && playerVentId.Value == vent.Id && IsValidVentKillTarget(player, options.VentKillTargets))
             {
-                if (IsValidVentKillTarget(player, options.VentKillTargets))
-                {
-                    target = player;
-                    break;
-                }
+                target = player;
+                break;
             }
         }
 
@@ -181,13 +178,9 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
         
         if (target.inVent)
         {
-            if (player.inVent && Vent.currentVent != null && !player.HasModifier<SerialKillerNoVentModifier>())
+            if (player.inVent && Vent.currentVent != null && !player.HasModifier<SerialKillerNoVentModifier>() && SerialKillerVentKillSystem.TryGetVentKillTarget(player.PlayerId, out var ventTarget))
             {
-                // Check if this is our vent kill target
-                if (SerialKillerVentKillSystem.TryGetVentKillTarget(player.PlayerId, out var ventTarget))
-                {
-                    return ventTarget != null && ventTarget.PlayerId == target.PlayerId && !target.HasDied();
-                }
+                return ventTarget != null && ventTarget.PlayerId == target.PlayerId && !target.HasDied();
             }
             return false;
         }
@@ -198,26 +191,28 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
     public override void FixedUpdateHandler(PlayerControl playerControl)
     {
         var player = PlayerControl.LocalPlayer;
-        if (player == null || !player.IsRole<SerialKillerRole>() || player.HasModifier<SerialKillerNoVentModifier>())
+        if (player == null || !player.IsRole<SerialKillerRole>())
         {
             return;
         }
 
-        var newTarget = GetTarget();
-        if (newTarget != Target)
-        {
-            SetOutline(false);
-        }
-        Target = IsTargetValid(newTarget) ? newTarget : null;
-        SetOutline(true);
-
-        UpdateVentHighlighting();
+        var hasNoVentModifier = player.HasModifier<SerialKillerNoVentModifier>();
 
         base.FixedUpdateHandler(playerControl);
 
-        if (Button != null && Target != null)
+        if (!hasNoVentModifier)
         {
-            if (player != null)
+            var newTarget = GetTarget();
+            if (newTarget != Target)
+            {
+                SetOutline(false);
+            }
+            Target = IsTargetValid(newTarget) ? newTarget : null;
+            SetOutline(true);
+
+            UpdateVentHighlighting();
+
+            if (Button != null && Target != null && player != null)
             {
                 var canHighlight = !TimeLordRewindSystem.IsRewinding &&
                                    !(HudManager.Instance.Chat.IsOpenOrOpening || MeetingHud.Instance) &&
@@ -229,6 +224,14 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
                 {
                     Button.SetEnabled();
                 }
+            }
+        }
+        else
+        {
+            UpdateVentHighlighting();
+            if (player.inVent || Vent.currentVent != null)
+            {
+                Target = null;
             }
         }
     }

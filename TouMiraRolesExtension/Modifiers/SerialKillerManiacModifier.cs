@@ -19,7 +19,7 @@ public sealed class SerialKillerManiacModifier(float timerDuration, float cooldo
     private TextMeshProUGUI? maniacText;
     private GameObject? maniacUI;
     private float soundTimer = 1f;
-    private bool hasMadeFirstKill = false;
+    private bool hasMadeFirstKill;
     
     public override string ModifierName => TouLocale.Get("ExtensionModifierSerialKillerManiac", "Maniac");
     public override float Duration => timerDuration;
