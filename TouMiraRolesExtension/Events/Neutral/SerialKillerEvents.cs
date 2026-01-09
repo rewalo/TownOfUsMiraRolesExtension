@@ -30,6 +30,7 @@ public static class SerialKillerEvents
             return;
         }
 
+        // Clear vent occupancy when player dies
         VentOccupancySystem.ClearForPlayer(victim.PlayerId);
     }
 
@@ -42,14 +43,6 @@ public static class SerialKillerEvents
         if (killer == null || victim == null || !killer.IsRole<SerialKillerRole>())
         {
             return;
-        }
-
-        if (killer.inVent && victim.inVent && SerialKillerVentKillSystem.TryGetVentKillTarget(killer.PlayerId, out var ventTarget) && ventTarget != null && ventTarget.PlayerId == victim.PlayerId && victim.AmOwner && Vent.currentVent != null)
-        {
-            victim.MyPhysics.RpcExitVent(Vent.currentVent.Id);
-            victim.MyPhysics?.ExitAllVents();
-            victim.inVent = false;
-            Vent.currentVent = null;
         }
 
         if (killer.AmOwner)

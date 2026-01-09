@@ -1,12 +1,12 @@
 using MiraAPI.Modifiers.Types;
-using MiraAPI.Networking;
 using TMPro;
-using TownOfUs.Assets;
-using TownOfUs.Modules.Localization;
 using TownOfUs.Utilities;
+using TownOfUs.Assets;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
+using TownOfUs.Modules.Localization;
+using MiraAPI.Networking;
 
 namespace TouMiraRolesExtension.Modifiers;
 
@@ -19,8 +19,8 @@ public sealed class SerialKillerManiacModifier(float timerDuration, float cooldo
     private TextMeshProUGUI? maniacText;
     private GameObject? maniacUI;
     private float soundTimer = 1f;
-    private bool hasMadeFirstKill;
-
+    private bool hasMadeFirstKill = false;
+    
     public override string ModifierName => TouLocale.Get("ExtensionModifierSerialKillerManiac", "Maniac");
     public override float Duration => timerDuration;
     public override bool AutoStart => false;
@@ -184,6 +184,7 @@ public sealed class SerialKillerManiacModifier(float timerDuration, float cooldo
         }
 
         hasMadeFirstKill = true;
+
         ResetTimer();
         ResumeTimer();
     }
