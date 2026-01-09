@@ -98,4 +98,26 @@
 
   <!-- Serial Killer Death Message -->
   <string name="DiedToSerialKiller">Murdered</string>
+  
+  <!-- Witch Role -->
+  <string name="ExtensionRoleWitch">Witch</string>
+  <string name="ExtensionRoleWitchIntroBlurb">We love casting spells!</string>
+  <string name="ExtensionRoleWitchTabDescription">Cast spells on players.\%nl\%They'll be highlighted in the next meeting and die after the configured amount of meetings.</string>
+  <string name="ExtensionRoleWitchWikiDescription">The Witch is an Impostor who can cast spells on other players. During the next meeting, spellbound players will be highlighted and die right after the meeting ends. Similar to the Vampire, shields and blanks are checked twice (when casting the spell and when the spell activates). If the Witch dies before the meeting or is guessed, spellbound players survive. Voting out the Witch saves all spellbound players.</string>
+  <string name="ExtensionRoleWitchSpell">Spell</string>
+  <string name="ExtensionRoleWitchSpellWikiDescription">Cast a spell on a player. They will be highlighted in the next meeting and die after the configured amount of meetings.</string>
+  
+  <!-- Witch Options -->
+  <string name="ExtensionOptionWitchSpellCooldown">Spell Cooldown</string>
+  <string name="ExtensionOptionWitchAdditionalCooldown">Witch Additional Cooldown</string>
+  <string name="ExtensionOptionWitchCanSpellEveryone">Witch Can Spell Everyone</string>
+  <string name="ExtensionOptionWitchSpellCastingDuration">Witch Spell Casting Duration</string>
+  <string name="ExtensionOptionWitchMeetingsUntilDeath">Meetings Until Death</string>
+  
+  <!-- Witch Death Message -->
+  <string name="DiedToWitch">Cursed</string>
+  
+  <!-- Witch Notifications -->
+  <string name="ExtensionWitchSpellNotification">&lt;player&gt; has been cursed! They have &lt;meetings&gt; meeting(s) left. Vote out or kill the Witch to save them!</string>
+  <string name="ExtensionWitchSpellNotificationMultiple">Multiple players have been cursed:\n&lt;players&gt;\nVote out or kill the Witch to save them!</string>
 </resources>

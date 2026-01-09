@@ -30,7 +30,6 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
             var player = PlayerControl.LocalPlayer;
             if (player != null && player.TryGetModifier<SerialKillerManiacModifier>(out var maniacMod))
             {
-                // Use maniac cooldown instead of normal kill cooldown when maniac mode is active
                 return maniacMod.CooldownDuration;
             }
             return player.GetKillCooldown();
@@ -290,8 +289,8 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
     {
         var player = PlayerControl.LocalPlayer;
         var options = OptionGroupSingleton<SerialKillerOptions>.Instance;
-        var highlightColor = Color.blue;
-        var ventColor = Color.red;
+        var highlightColor = Color.green;
+        var ventColor = TouExtensionColors.SerialKiller;
         if (player == null || player.HasModifier<SerialKillerNoVentModifier>())
         {
             if (ShipStatus.Instance != null)
