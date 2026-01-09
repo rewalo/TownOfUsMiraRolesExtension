@@ -114,9 +114,7 @@ public sealed class WitchSpellButton : TownOfUsKillRoleButton<WitchRole, PlayerC
             return false;
         }
 
-        var options = OptionGroupSingleton<WitchOptions>.Instance;
-
-        if (!options.CanSpellEveryone && target.IsRole<SpyRole>() || target.IsImpostor())
+        if (target.IsRole<SpyRole>() || target.IsImpostor())
         {
             return false;
         }

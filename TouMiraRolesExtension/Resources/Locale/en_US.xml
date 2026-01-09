@@ -101,16 +101,15 @@
   
   <!-- Witch Role -->
   <string name="ExtensionRoleWitch">Witch</string>
-  <string name="ExtensionRoleWitchIntroBlurb">We love casting spells!</string>
+  <string name="ExtensionRoleWitchIntroBlurb">Cast spells on players to curse them.</string>
   <string name="ExtensionRoleWitchTabDescription">Cast spells on players.\%nl\%They'll be highlighted in the next meeting and die after the configured amount of meetings.</string>
-  <string name="ExtensionRoleWitchWikiDescription">The Witch is an Impostor who can cast spells on other players. During the next meeting, spellbound players will be highlighted and die right after the meeting ends. Similar to the Vampire, shields and blanks are checked twice (when casting the spell and when the spell activates). If the Witch dies before the meeting or is guessed, spellbound players survive. Voting out the Witch saves all spellbound players.</string>
+  <string name="ExtensionRoleWitchWikiDescription">The Witch is an Impostor Power Role that can cast spells on other players. Spellbound players are highlighted in the next meeting and die after the configured amount of meetings. If the Witch dies, gets exiled, or is guessed, all spellbound players survive.</string>
   <string name="ExtensionRoleWitchSpell">Spell</string>
   <string name="ExtensionRoleWitchSpellWikiDescription">Cast a spell on a player. They will be highlighted in the next meeting and die after the configured amount of meetings.</string>
   
   <!-- Witch Options -->
   <string name="ExtensionOptionWitchSpellCooldown">Spell Cooldown</string>
   <string name="ExtensionOptionWitchAdditionalCooldown">Witch Additional Cooldown</string>
-  <string name="ExtensionOptionWitchCanSpellEveryone">Witch Can Spell Everyone</string>
   <string name="ExtensionOptionWitchSpellCastingDuration">Witch Spell Casting Duration</string>
   <string name="ExtensionOptionWitchMeetingsUntilDeath">Meetings Until Death</string>
   

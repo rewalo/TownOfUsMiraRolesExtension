@@ -17,9 +17,6 @@ public sealed class WitchOptions : AbstractOptionGroup<WitchRole>
     [ModdedNumberOption("ExtensionOptionWitchAdditionalCooldown", 0f, 30f, 2.5f, MiraNumberSuffixes.Seconds)]
     public float AdditionalCooldown { get; set; } = 5f;
 
-    [ModdedToggleOption("ExtensionOptionWitchCanSpellEveryone")]
-    public bool CanSpellEveryone { get; set; } = true;
-
     [ModdedNumberOption("ExtensionOptionWitchSpellCastingDuration", 0.5f, 5f, 0.5f, MiraNumberSuffixes.Seconds)]
     public float SpellCastingDuration { get; set; } = 2.5f;
 
