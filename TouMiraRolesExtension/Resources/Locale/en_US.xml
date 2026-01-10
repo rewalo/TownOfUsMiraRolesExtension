@@ -111,7 +111,7 @@
   <string name="ExtensionRoleWitch">Witch</string>
   <string name="ExtensionRoleWitchIntroBlurb">We love casting spells!</string>
   <string name="ExtensionRoleWitchTabDescription">Cast spells on players.\%nl\%They'll be highlighted in the next meeting and die after the configured amount of meetings.</string>
-  <string name="ExtensionRoleWitchWikiDescription">The Witch is an Impostor Power Role that can cast spells on other players. Spellbound players are highlighted in the next meeting and die after the configured amount of meetings. If the Witch dies, gets exiled, or is guessed, all spellbound players survive.</string>
+  <string name="ExtensionRoleWitchWikiDescription">The Witch is an Impostor Killing role that can cast spells on other players. Spellbound players are highlighted in the next meeting and die after the configured amount of meetings. If the Witch dies, gets exiled, or is guessed, all spellbound players survive.</string>
   <string name="ExtensionRoleWitchSpell">Spell</string>
   <string name="ExtensionRoleWitchSpellWikiDescription">Cast a spell on a player. They will be highlighted in the next meeting and die after the configured amount of meetings.</string>
   
@@ -127,4 +127,40 @@
   <!-- Witch Notifications -->
   <string name="ExtensionWitchSpellNotification">&lt;player&gt; has been cursed! They have &lt;meetings&gt; meeting(s) left. Vote out or kill the Witch to save them!</string>
   <string name="ExtensionWitchSpellNotificationMultiple">Multiple players have been cursed:\n&lt;players&gt;\nVote out or kill the Witch to save them!</string>
+
+  <!-- Wraith Role -->
+  <string name="ExtensionRoleWraith">Wraith</string>
+  <string name="ExtensionRoleWraithIntroBlurb">Move fast and strike unpredictably.</string>
+  <string name="ExtensionRoleWraithTabDescription">Dash for speed. Place a Lantern to teleport back to it.</string>
+  <string name="ExtensionRoleWraithWikiDescription">The Wraith is an Impostor Power role focused on fast, unpredictable movement. Dash increases your movement speed by 75% for a short time. Lantern lets you place a hidden marker only you can see; reactivate it to teleport back and briefly swoop. If the Lantern expires before you return, it breaks and leaves permanent evidence visible to all players.</string>
+  <string name="ExtensionRoleWraithDash">Dash</string>
+  <string name="ExtensionRoleWraithDashWikiDescription">Temporarily increase your movement speed by 75%.</string>
+  <string name="ExtensionRoleWraithLantern">Lantern</string>
+  <string name="ExtensionRoleWraithLanternWikiDescription">Place a Lantern only you can see. Reactivate it to teleport back and briefly turn invisible. If it expires, it breaks and leaves evidence visible to everyone.</string>
+  <string name="ExtensionRoleWraithLanternPlace">Lantern</string>
+  <string name="ExtensionRoleWraithLanternReturn">Return</string>
+
+  <!-- Wraith Options -->
+  <string name="ExtensionOptionWraithDashCooldown">Dash Cooldown</string>
+  <string name="ExtensionOptionWraithDashDuration">Dash Duration</string>
+  <string name="ExtensionOptionWraithLantern">Lantern</string>
+  <string name="ExtensionOptionWraithLanternCooldown">Lantern Cooldown</string>
+  <string name="ExtensionOptionWraithLanternDuration">Lantern Duration</string>
+  <string name="ExtensionOptionWraithInvisibleDuration">Invisible Duration</string>
+
+  <!-- Forestaller Role -->
+  <string name="ExtensionRoleForestaller">Forestaller</string>
+  <string name="ExtensionRoleForestallerIntroBlurb">Complete all tasks to disable sabotages.</string>
+  <string name="ExtensionRoleForestallerTabDescription">Finish all of your tasks. Once you do, sabotages cannot be called while you are alive.</string>
+  <string name="ExtensionRoleForestallerWikiDescription">The Forestaller is a Crewmate Support role that can prevent sabotages before they happen. After completing all tasks, sabotages are disabled while the Forestaller is alive. The Forestaller is revealed after finishing their last task.</string>
+
+  <!-- Forestaller Options -->
+  <string name="ExtensionOptionForestallerExtraShortTasks">Extra Short Tasks</string>
+  <string name="ExtensionOptionForestallerExtraLongTasks">Extra Long Tasks</string>
+  <string name="ExtensionOptionForestallerRevealTiming">Reveal Timing</string>
+  <string name="ExtensionOptionForestallerRevealTimingEnumNextMeeting">Next Meeting</string>
+  <string name="ExtensionOptionForestallerRevealTimingEnumInstant">Instant</string>
+
+  <!-- Forestaller Announcement -->
+  <string name="ExtensionForestallerSabotagesDisabledAnnouncement">Forestaller has completed all tasks. Sabotages are now disabled.</string>
 </resources>

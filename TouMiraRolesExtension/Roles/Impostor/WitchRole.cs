@@ -37,7 +37,7 @@ public sealed class WitchRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsRo
 
     public Color RoleColor => TouExtensionColors.Witch;
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
-    public RoleAlignment RoleAlignment => RoleAlignment.ImpostorPower;
+    public RoleAlignment RoleAlignment => RoleAlignment.ImpostorKilling;
 
     public CustomRoleConfiguration Configuration => new(this)
     {

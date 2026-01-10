@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Reflection;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Attributes;
@@ -27,8 +26,6 @@ using TouMiraRolesExtension.Options.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
 using TouMiraRolesExtension.Assets;
 using UnityEngine;
-using UnityEngine.Events;
-using TMPro;
 using Random = System.Random;
 using TownOfUs.Extensions;
 using TownOfUs.Roles.Neutral;
@@ -42,11 +39,7 @@ using TouMiraRolesExtension.GameOver;
 using TownOfUs.GameOver;
 using MiraAPI.Networking;
 using TownOfUs.Modules;
-using MiraAPI.Events;
-using MiraAPI.Events.Vanilla.Meeting.Voting;
-using MiraAPI.Voting;
 using Reactor.Utilities.Extensions;
-using UObject = UnityEngine.Object;
 
 namespace TouMiraRolesExtension.Roles.Neutral;
 
@@ -225,16 +218,20 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         GhostRole = (RoleTypes)RoleId.Get<NeutralGhostRole>()
     };
 
-    public bool MetWinCon => !ClientVoted && Client != null && !Client.HasDied();
+    public bool MetWinCon => Client != null && !Client.HasDied();
 
     public bool WinConditionMet()
     {
-        if (Player.HasDied())
+        // IMPORTANT:
+        // This method is used by TownOfUs' NeutralRoleWinCondition to decide whether the game should end NOW.
+        // Lawyer should NOT end the game just because their client is alive; Lawyer "steals" another win.
+        // We therefore latch win state via AboutToWin, which is set right before triggering LawyerGameOver.
+        if (Player.HasDied() || !AboutToWin)
         {
             return false;
         }
 
-        return !ClientVoted && Client != null && !Client.HasDied();
+        return Client != null && !Client.HasDied();
     }
 
     public override void Initialize(PlayerControl player)
@@ -412,10 +409,18 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                 objectionsExhausted = true;
             }
 
-            if (objectionsExhausted ||
-                meeting.state == MeetingHud.VoteStates.Discussion ||
+            bool hideButton = objectionsExhausted ||
                 meeting.state == MeetingHud.VoteStates.Proceeding ||
-                meeting.state == MeetingHud.VoteStates.Results)
+                meeting.state == MeetingHud.VoteStates.Results;
+
+            // Hide button in the last 20 seconds of the meeting
+            var discussionTime = GameOptionsManager.Instance.currentNormalGameOptions.DiscussionTime;
+            if (meeting.discussionTimer > discussionTime - 20f)
+            {
+                hideButton = true;
+            }
+
+            if (hideButton)
             {
                 if (meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var button) && button != null)
                 {
@@ -511,6 +516,13 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         var hasAnyVotes = meeting.playerStates.Any(pva =>
     pva.VotedFor != 255 && !pva.AmDead);
         if (!hasAnyVotes)
+        {
+            return;
+        }
+
+        // Prevent objection in the last 20 seconds of the meeting
+        var discussionTime = GameOptionsManager.Instance.currentNormalGameOptions.DiscussionTime;
+        if (meeting.discussionTimer > discussionTime - 20f)
         {
             return;
         }
@@ -622,11 +634,6 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
     public override bool DidWin(GameOverReason gameOverReason)
     {
         if (Client == null || Client.HasDied())
-        {
-            return false;
-        }
-
-        if (ClientVoted)
         {
             return false;
         }
