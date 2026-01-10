@@ -7,6 +7,11 @@ using TouMiraRolesExtension.Roles.Neutral;
 using TownOfUs.Utilities;
 using MiraAPI.GameOptions;
 using TownOfUs;
+using TownOfUs.Modifiers;
+using TownOfUs.Events;
+using TownOfUs.Roles.Crewmate;
+using InnerNet;
+using MiraAPI.Utilities;
 
 namespace TouMiraRolesExtension.Patches;
 
@@ -21,7 +26,49 @@ public static class ExtensionLawyerWinPatch
             return true;
         }
 
+        // Don't check win conditions in tutorial
+        if (TutorialManager.InstanceExists)
+        {
+            return true;
+        }
+
+        // Only check on host
+        if (!AmongUsClient.Instance.AmHost)
+        {
+            return true;
+        }
+
+        // Ensure game data exists
+        if (!GameData.Instance)
+        {
+            return true;
+        }
+
+        // Ensure game has started
+        if (AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started)
+        {
+            return true;
+        }
+
         if (ExileController.Instance)
+        {
+            return true;
+        }
+
+        // Don't end game if death handlers are running or death is recent
+        if (DeathHandlerModifier.IsCoroutineRunning || DeathHandlerModifier.IsAltCoroutineRunning || DeathEventHandlers.IsDeathRecent)
+        {
+            return true;
+        }
+
+        // Don't end game if a revive is in progress
+        if (AltruistRole.IsReviveInProgress)
+        {
+            return true;
+        }
+
+        // Don't end game if there are game halters alive with more than 1 player
+        if (MiscUtils.GameHaltersAliveCount > 0 && Helpers.GetAlivePlayers().Count > 1)
         {
             return true;
         }
