@@ -1,7 +1,10 @@
+using System.Collections;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Meeting;
+using MiraAPI.Events.Vanilla.Meeting.Voting;
 using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
+using Reactor.Utilities;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Options.Roles.Neutral;
 using TownOfUs.Events;
@@ -9,6 +12,7 @@ using TownOfUs.Modifiers;
 using TownOfUs.Modifiers.Game;
 using TownOfUs.Utilities;
 using TownOfUs.Modules.Localization;
+using MiraAPI.Utilities;
 
 namespace TouMiraRolesExtension.Events.Neutral;
 
@@ -82,5 +86,27 @@ public static class LawyerEvents
                 lawyer.CheckClientDeath(victim);
             }
         }
+    }
+
+    [RegisterEvent(1000)]
+    public static void BeforeLocalVoteEvent(BeforeVoteEvent @event)
+    {
+        var voteArea = @event.VoteArea;
+        var votedPlayer = MiscUtils.PlayerById(voteArea.TargetPlayerId);
+        if (PlayerControl.LocalPlayer.HasDied() || (votedPlayer != null && votedPlayer.HasDied()))
+        {
+            return;
+        }
+
+        if (PlayerControl.LocalPlayer.Data.Role is not LawyerRole lawyer)
+        {
+            return;
+        }
+
+        if (voteArea.Parent.state is MeetingHud.VoteStates.Proceeding or MeetingHud.VoteStates.Results)
+        {
+            return;
+        }
+
     }
 }
