@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Reflection;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Attributes;
@@ -27,8 +26,6 @@ using TouMiraRolesExtension.Options.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
 using TouMiraRolesExtension.Assets;
 using UnityEngine;
-using UnityEngine.Events;
-using TMPro;
 using Random = System.Random;
 using TownOfUs.Extensions;
 using TownOfUs.Roles.Neutral;
@@ -42,11 +39,7 @@ using TouMiraRolesExtension.GameOver;
 using TownOfUs.GameOver;
 using MiraAPI.Networking;
 using TownOfUs.Modules;
-using MiraAPI.Events;
-using MiraAPI.Events.Vanilla.Meeting.Voting;
-using MiraAPI.Voting;
 using Reactor.Utilities.Extensions;
-using UObject = UnityEngine.Object;
 
 namespace TouMiraRolesExtension.Roles.Neutral;
 
@@ -229,7 +222,11 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
     public bool WinConditionMet()
     {
-        if (Player.HasDied())
+        // IMPORTANT:
+        // This method is used by TownOfUs' NeutralRoleWinCondition to decide whether the game should end NOW.
+        // Lawyer should NOT end the game just because their client is alive; Lawyer "steals" another win.
+        // We therefore latch win state via AboutToWin, which is set right before triggering LawyerGameOver.
+        if (Player.HasDied() || !AboutToWin)
         {
             return false;
         }

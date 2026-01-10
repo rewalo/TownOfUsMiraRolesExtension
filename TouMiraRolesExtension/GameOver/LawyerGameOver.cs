@@ -19,20 +19,30 @@ public sealed class LawyerGameOver : CustomGameOver
 {
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        if (winners.Length != 2)
+        // Must have at least 2 winners (at least one lawyer and one client)
+        if (winners.Length < 2)
         {
             return false;
         }
 
-        if (playerControl.GetRole<LawyerRole>() != null)
+        // The winners array is what gets replicated for this CustomGameOver.
+        // Do NOT depend on local, non-networked role state (e.g. AboutToWin/WinConditionMet),
+        // otherwise non-host clients can fall back to vanilla end-game results.
+        if (!winners.Any(w => w.Object == playerControl))
         {
-            return winners.Any(w => w.Object == playerControl);
+            return false;
         }
 
-        // Use LawyerUtils to check if player is a client of any lawyer
+        // Check if the player is a winning lawyer
+        if (playerControl.GetRole<LawyerRole>() != null)
+        {
+            return true;
+        }
+
+        // Check if the player is a client of any winning lawyer
         if (LawyerUtils.IsClientOfAnyLawyer(playerControl))
         {
-            return winners.Any(w => w.Object == playerControl);
+            return true;
         }
 
         return false;
@@ -40,13 +50,14 @@ public sealed class LawyerGameOver : CustomGameOver
 
     public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        // Find the winning lawyer and their SPECIFIC client
-        var winningLawyer = PlayerControl.AllPlayerControls.ToArray()
-            .FirstOrDefault(p => p != null && p.IsRole<LawyerRole>());
-        
-        var client = winningLawyer != null 
-            ? LawyerUtils.GetClientForLawyer(winningLawyer)
-            : null;
+        // Determine the display based on any alive Lawyer's current Client.
+        // Avoid WinConditionMet() here because it may rely on non-networked transient state.
+        var client = PlayerControl.AllPlayerControls.ToArray()
+            .Where(p => p != null && !p.HasDied() && p.IsRole<LawyerRole>())
+            .Select(p => p.GetRole<LawyerRole>())
+            .Where(l => l != null && l.Client != null && !l.Client.HasDied())
+            .Select(l => l!.Client)
+            .FirstOrDefault();
         
         var (winColor, winText) = DetermineWinCondition(client);
         SetWinningFaction(winColor, winText);
