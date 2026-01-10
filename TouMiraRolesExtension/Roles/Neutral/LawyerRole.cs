@@ -409,10 +409,18 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                 objectionsExhausted = true;
             }
 
-            if (objectionsExhausted ||
-                meeting.state == MeetingHud.VoteStates.Discussion ||
+            bool hideButton = objectionsExhausted ||
                 meeting.state == MeetingHud.VoteStates.Proceeding ||
-                meeting.state == MeetingHud.VoteStates.Results)
+                meeting.state == MeetingHud.VoteStates.Results;
+
+            // Hide button in the last 20 seconds of the meeting
+            var discussionTime = GameOptionsManager.Instance.currentNormalGameOptions.DiscussionTime;
+            if (meeting.discussionTimer > discussionTime - 20f)
+            {
+                hideButton = true;
+            }
+
+            if (hideButton)
             {
                 if (meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var button) && button != null)
                 {
@@ -508,6 +516,13 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         var hasAnyVotes = meeting.playerStates.Any(pva =>
     pva.VotedFor != 255 && !pva.AmDead);
         if (!hasAnyVotes)
+        {
+            return;
+        }
+
+        // Prevent objection in the last 20 seconds of the meeting
+        var discussionTime = GameOptionsManager.Instance.currentNormalGameOptions.DiscussionTime;
+        if (meeting.discussionTimer > discussionTime - 20f)
         {
             return;
         }

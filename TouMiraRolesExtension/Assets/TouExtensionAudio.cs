@@ -9,4 +9,6 @@ public static class TouExtensionAudio
     private const string AudioPath = "TouMiraRolesExtension.Resources.Audio";
     public static LoadableAsset<AudioClip> WitchLaugh { get; } = new LoadableAudioResourceAsset($"{AudioPath}.witch_laugh.wav");
     public static LoadableAsset<AudioClip> ObjectionSound { get; } = new LoadableAudioResourceAsset($"{AudioPath}.objection.wav");
+    public static LoadableAsset<AudioClip> WraithDashSound { get; } = new LoadableAudioResourceAsset($"{AudioPath}.wraith_dash.wav");
+    public static LoadableAsset<AudioClip> LanternBreakSound { get; } = new LoadableAudioResourceAsset($"{AudioPath}.lantern_break.wav");
 }

@@ -10,5 +10,8 @@ public enum ExtensionRpc : uint
     WitchSpell,
     WitchSpellNotification,
     LawyerObject,
-    ForestallerReveal
+    ForestallerReveal,
+    WraithPlaceLantern,
+    WraithReturnLantern,
+    WraithBreakLantern
 }
