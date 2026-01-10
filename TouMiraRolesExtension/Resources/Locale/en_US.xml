@@ -53,13 +53,16 @@
   <string name="ExtensionRoleLawyer">Lawyer</string>
   <string name="ExtensionRoleLawyerIntroBlurb">Defend your client to win!</string>
   <string name="ExtensionRoleLawyerTabDescription">Defend &lt;client&gt;. If they get voted out, you lose!</string>
-  <string name="ExtensionRoleLawyerWikiDescription">The Lawyer is a Neutral Evil role that wins by keeping their assigned client (a killer role) from being voted out. If their client gets voted out, the Lawyer loses.</string>
+  <string name="ExtensionRoleLawyerWikiDescription">The Lawyer is a Neutral Benign role that wins by keeping their assigned client from being voted out. If their client gets voted out, the Lawyer loses.</string>
+  <string name="ExtensionRoleLawyerObject">Object</string>
+  <string name="ExtensionRoleLawyerObjectWikiDescription">During meetings, click the Object button next to Skip to enable objection mode. Then click the objection button on your client's vote area to object to all votes, clearing them and forcing players to vote again.</string>
   
   <!-- Lawyer Options -->
   <string name="ExtensionOptionLawyerDieOnClientDeath">Lawyer Dies When Client Dies</string>
   <string name="ExtensionOptionLawyerBecomesClientDeath">On Client Death, Lawyer Becomes</string>
   <string name="ExtensionOptionLawyerGetVotedOutWithClient">Lawyer Gets Voted Out With Client</string>
   <string name="ExtensionOptionLawyerCanSeeClientRole">Lawyer Knows Client's Role</string>
+  <string name="ExtensionOptionLawyerKillerClientChance">Killer Client Chance</string>
   
   <!-- Lawyer Win -->
   <string name="ExtensionLawyerWin">Wins</string>
@@ -75,6 +78,11 @@
   <!-- Lawyer Death Messages -->
   <string name="ExtensionLawyerDiedWithClient">Failed to Defend</string>
   <string name="ExtensionLawyerDiedClientDeath">Case Closed</string>
+  
+  <!-- Lawyer Objection -->
+  <string name="ExtensionOptionLawyerMaxObjections">Max Objections (Per Game)</string>
+  <string name="ExtensionOptionLawyerMaxObjectionsPerMeeting">Max Objections Per Meeting</string>
+  <string name="ExtensionLawyerObjectionNotification">Objection! A lawyer has objected to the current votes! All votes have been cleared - please vote again.</string>
   
   <!-- Serial Killer Role -->
   <string name="ExtensionRoleSerialKiller">Serial Killer</string>
@@ -101,7 +109,7 @@
   
   <!-- Witch Role -->
   <string name="ExtensionRoleWitch">Witch</string>
-  <string name="ExtensionRoleWitchIntroBlurb">Cast spells on players to curse them.</string>
+  <string name="ExtensionRoleWitchIntroBlurb">We love casting spells!</string>
   <string name="ExtensionRoleWitchTabDescription">Cast spells on players.\%nl\%They'll be highlighted in the next meeting and die after the configured amount of meetings.</string>
   <string name="ExtensionRoleWitchWikiDescription">The Witch is an Impostor Power Role that can cast spells on other players. Spellbound players are highlighted in the next meeting and die after the configured amount of meetings. If the Witch dies, gets exiled, or is guessed, all spellbound players survive.</string>
   <string name="ExtensionRoleWitchSpell">Spell</string>

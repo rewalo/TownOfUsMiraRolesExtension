@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Reflection;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Attributes;
@@ -9,6 +10,7 @@ using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using Reactor.Networking.Attributes;
+using Reactor.Networking.Rpc;
 using Reactor.Utilities;
 using TownOfUs.Modifiers;
 using TownOfUs.Modifiers.Game;
@@ -23,7 +25,10 @@ using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Networking;
 using TouMiraRolesExtension.Options.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
+using TouMiraRolesExtension.Assets;
 using UnityEngine;
+using UnityEngine.Events;
+using TMPro;
 using Random = System.Random;
 using TownOfUs.Extensions;
 using TownOfUs.Roles.Neutral;
@@ -36,6 +41,12 @@ using MiraAPI.GameEnd;
 using TouMiraRolesExtension.GameOver;
 using TownOfUs.GameOver;
 using MiraAPI.Networking;
+using TownOfUs.Modules;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Meeting.Voting;
+using MiraAPI.Voting;
+using Reactor.Utilities.Extensions;
+using UObject = UnityEngine.Object;
 
 namespace TouMiraRolesExtension.Roles.Neutral;
 
@@ -47,8 +58,19 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
     public bool AboutToWin { get; set; }
 
     [HideFromIl2Cpp] public List<byte> Voters { get; set; } = [];
+    [HideFromIl2Cpp] public int ObjectionsUsed { get; set; }
+    [HideFromIl2Cpp] public int ObjectionsUsedThisMeeting { get; set; }
+    [HideFromIl2Cpp] public bool HasObjected { get; set; }
+    [HideFromIl2Cpp] public List<byte> ObjectedVoters { get; set; } = [];
+
+    private MeetingMenu? meetingMenu;
 
     public int Priority { get; set; } = 2;
+
+    public void HideObjectionButtons()
+    {
+        meetingMenu?.HideButtons();
+    }
 
     public void AssignTargets()
     {
@@ -63,25 +85,54 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
         var assignedClients = new HashSet<byte>();
 
+        var lawyerOptions = OptionGroupSingleton<LawyerOptions>.Instance;
+        var killerChance = (int)lawyerOptions.KillerClientChance;
+        Random rnd = new();
+        var chance = rnd.Next(1, 101);
+
         foreach (var lawyer in lawyers)
         {
-            var killers = PlayerControl.AllPlayerControls.ToArray()
-    .Where(x => !x.IsRole<LawyerRole>() && !x.HasDied() &&
-                (x.IsImpostorAligned() || x.Is(RoleAlignment.NeutralKilling)) &&
-                !x.HasModifier<ExecutionerTargetModifier>() &&
-                !x.HasModifier<GuardianAngelTargetModifier>() &&
-                !x.HasModifier<AllianceGameModifier>() &&
-                !SpectatorRole.TrackedSpectators.Contains(x.Data.PlayerName) &&
-                !assignedClients.Contains(x.PlayerId)).ToList();
+            PlayerControl? target = null;
 
-            if (killers.Count > 0)
+            if (chance <= killerChance)
             {
-                Random rnd = new();
-                var shuffled = killers.OrderBy(x => rnd.Next()).ToList();
-                var randomTarget = shuffled[0];
+                var killers = PlayerControl.AllPlayerControls.ToArray()
+                    .Where(x => !x.IsRole<LawyerRole>() && !x.HasDied() &&
+                                (x.IsImpostorAligned() || x.Is(RoleAlignment.NeutralKilling)) &&
+                                !x.HasModifier<ExecutionerTargetModifier>() &&
+                                !x.HasModifier<GuardianAngelTargetModifier>() &&
+                                !x.HasModifier<AllianceGameModifier>() &&
+                                !SpectatorRole.TrackedSpectators.Contains(x.Data.PlayerName) &&
+                                !assignedClients.Contains(x.PlayerId)).ToList();
 
-                assignedClients.Add(randomTarget.PlayerId);
-                RpcSetLawyerClient(lawyer, randomTarget);
+                if (killers.Count > 0)
+                {
+                    var shuffled = killers.OrderBy(x => rnd.Next()).ToList();
+                    target = shuffled[0];
+                }
+            }
+
+            if (target == null)
+            {
+                var allPlayers = PlayerControl.AllPlayerControls.ToArray()
+                    .Where(x => !x.IsRole<LawyerRole>() && !x.HasDied() &&
+                                !x.HasModifier<ExecutionerTargetModifier>() &&
+                                !x.HasModifier<GuardianAngelTargetModifier>() &&
+                                !x.HasModifier<AllianceGameModifier>() &&
+                                !SpectatorRole.TrackedSpectators.Contains(x.Data.PlayerName) &&
+                                !assignedClients.Contains(x.PlayerId)).ToList();
+
+                if (allPlayers.Count > 0)
+                {
+                    var shuffled = allPlayers.OrderBy(x => rnd.Next()).ToList();
+                    target = shuffled[0];
+                }
+            }
+
+            if (target != null)
+            {
+                assignedClients.Add(target.PlayerId);
+                RpcSetLawyerClient(lawyer, target);
             }
             else
             {
@@ -104,6 +155,26 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             MiscUtils.AppendOptionsText(GetType());
     }
 
+    [HideFromIl2Cpp]
+    public List<CustomButtonWikiDescription> Abilities
+    {
+        get
+        {
+            var maxObjections = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjections;
+            if (maxObjections <= 0)
+            {
+                return [];
+            }
+
+            return new List<CustomButtonWikiDescription>
+            {
+                new(TouLocale.Get("ExtensionRoleLawyerObject", "Object"),
+                    TouLocale.Get("ExtensionRoleLawyerObjectWikiDescription"),
+                    TouExtensionAssets.ObjectionButtonSprite)
+            };
+        }
+    }
+
     private string ClientString(bool capitalize = false)
     {
         string desc;
@@ -124,7 +195,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
     public Color RoleColor => TownOfUsColors.Lawyer;
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
-    public RoleAlignment RoleAlignment => RoleAlignment.NeutralEvil;
+    public RoleAlignment RoleAlignment => RoleAlignment.NeutralBenign;
 
     public bool SetupIntroTeam(IntroCutscene instance,
         ref Il2CppSystem.Collections.Generic.List<PlayerControl> yourTeam)
@@ -193,6 +264,19 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             }
         }
 
+        if (Player.AmOwner)
+        {
+            var maxObjections = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjections;
+            if (maxObjections > 0)
+            {
+                meetingMenu = new MeetingMenu(this, OnObjectClick, MeetingAbilityType.Click,
+                    TouExtensionAssets.ObjectionButtonSprite, TouExtensionAssets.ObjectionButtonSprite, IsExemptForObjection)
+                {
+                    Position = Vector3.zero
+                };
+            }
+        }
+
         if (TutorialManager.InstanceExists && Client == null &&
             AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started && Player.AmOwner &&
             Player.IsHost())
@@ -222,6 +306,298 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         if (!Player.HasModifier<BasicGhostModifier>() && ClientVoted)
         {
             Player.AddModifier<BasicGhostModifier>();
+        }
+
+        if (Player.AmOwner)
+        {
+            meetingMenu?.Dispose();
+            meetingMenu = null;
+        }
+    }
+
+    public override void OnMeetingStart()
+    {
+        RoleBehaviourStubs.OnMeetingStart(this);
+        ObjectionsUsedThisMeeting = 0; HasObjected = false;
+        ObjectedVoters.Clear();
+
+        if (Player.AmOwner && meetingMenu != null && Client != null)
+        {
+            var maxObjectionsPerMeeting = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjectionsPerMeeting;
+            var maxObjections = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjections;
+
+            if (maxObjectionsPerMeeting > 0 || maxObjections > 0)
+            {
+                meetingMenu.GenButtons(MeetingHud.Instance,
+                    Player.AmOwner && !Player.HasDied() && Client != null && !Client.HasDied());
+
+                Coroutines.Start(ScaleObjectionButton());
+                Coroutines.Start(UpdateObjectionButton());
+            }
+        }
+    }
+
+    private IEnumerator ScaleObjectionButton()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (meetingMenu == null || Client == null || Client.HasDied())
+        {
+            yield break;
+        }
+
+        var meeting = MeetingHud.Instance;
+        if (meeting == null)
+        {
+            yield break;
+        }
+
+        var voteArea = meeting.playerStates.FirstOrDefault(pva => pva.TargetPlayerId == Client.PlayerId);
+        if (voteArea == null || voteArea.NameText == null)
+        {
+            yield break;
+        }
+
+        if (meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var button) && button != null)
+        {
+            voteArea.NameText.ForceMeshUpdate();
+
+            float textWidth = 0f;
+            if (voteArea.NameText.textBounds.size.x > 0)
+            {
+                textWidth = voteArea.NameText.textBounds.size.x / 2f;
+            }
+            else if (voteArea.NameText.preferredWidth > 0)
+            {
+                textWidth = voteArea.NameText.preferredWidth / 2f;
+            }
+
+            var nameTextLocalPos = voteArea.NameText.transform.localPosition;
+            button.transform.localPosition = new Vector3(nameTextLocalPos.x + textWidth + 0.15f, nameTextLocalPos.y, -1f);
+            button.transform.localScale = new Vector3(0.07f, 0.07f, 1f);
+        }
+    }
+
+    private IEnumerator UpdateObjectionButton()
+    {
+        while (MeetingHud.Instance != null)
+        {
+            yield return new WaitForSeconds(0.1f);
+
+            if (meetingMenu == null || Client == null || Client.HasDied())
+            {
+                continue;
+            }
+
+            var meeting = MeetingHud.Instance;
+            var maxObjections = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjections;
+            var maxObjectionsPerMeeting = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjectionsPerMeeting;
+
+            if (maxObjections <= 0 && maxObjectionsPerMeeting <= 0)
+            {
+                if (meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var button) && button != null)
+                {
+                    meetingMenu.HideSingle(Client.PlayerId);
+                }
+                continue;
+            }
+
+            bool objectionsExhausted = false;
+            if (maxObjections > 0 && ObjectionsUsed >= maxObjections)
+            {
+                objectionsExhausted = true;
+            }
+            if (maxObjectionsPerMeeting > 0 && ObjectionsUsedThisMeeting >= maxObjectionsPerMeeting)
+            {
+                objectionsExhausted = true;
+            }
+
+            if (objectionsExhausted ||
+                meeting.state == MeetingHud.VoteStates.Discussion ||
+                meeting.state == MeetingHud.VoteStates.Proceeding ||
+                meeting.state == MeetingHud.VoteStates.Results)
+            {
+                if (meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var button) && button != null)
+                {
+                    meetingMenu.HideSingle(Client.PlayerId);
+                }
+            }
+            else if (meeting.state == MeetingHud.VoteStates.Voted ||
+                     meeting.state == MeetingHud.VoteStates.NotVoted)
+            {
+                var voteArea = meeting.playerStates.FirstOrDefault(pva => pva.TargetPlayerId == Client.PlayerId);
+                if (voteArea != null && voteArea.NameText != null &&
+                    meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var button) && button != null)
+                {
+                    voteArea.NameText.ForceMeshUpdate();
+
+                    float textWidth = 0f;
+                    if (voteArea.NameText.textBounds.size.x > 0)
+                    {
+                        textWidth = voteArea.NameText.textBounds.size.x / 2f;
+                    }
+                    else if (voteArea.NameText.preferredWidth > 0)
+                    {
+                        textWidth = voteArea.NameText.preferredWidth / 2f;
+                    }
+
+                    var nameTextLocalPos = voteArea.NameText.transform.localPosition;
+                    button.transform.localPosition = new Vector3(nameTextLocalPos.x + textWidth + 0.15f, nameTextLocalPos.y, -1f);
+                }
+            }
+        }
+    }
+
+    public override void OnVotingComplete()
+    {
+        RoleBehaviourStubs.OnVotingComplete(this);
+
+        if (Player.AmOwner)
+        {
+            meetingMenu?.HideButtons();
+        }
+    }
+
+    private static bool IsExempt(PlayerVoteArea voteArea)
+    {
+        var player = GameData.Instance.GetPlayerById(voteArea.TargetPlayerId)?.Object;
+        return !player || !player?.Data || player!.Data.Disconnected || player.Data.IsDead;
+    }
+
+    private bool IsExemptForObjection(PlayerVoteArea voteArea)
+    {
+        if (Client == null || Client.HasDied() || voteArea.TargetPlayerId != Client.PlayerId)
+        {
+            return true;
+        }
+
+        return IsExempt(voteArea);
+    }
+
+    private void OnObjectClick(PlayerVoteArea voteArea, MeetingHud meeting)
+    {
+        if (meeting.state != MeetingHud.VoteStates.Voted && meeting.state != MeetingHud.VoteStates.NotVoted)
+        {
+            return;
+        }
+
+        if (IsExemptForObjection(voteArea))
+        {
+            return;
+        }
+
+        if (Client == null || Client.HasDied() || Player.HasDied())
+        {
+            return;
+        }
+
+        var maxObjections = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjections;
+        var maxObjectionsPerMeeting = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjectionsPerMeeting;
+
+        if (maxObjections > 0 && ObjectionsUsed >= maxObjections)
+        {
+            return;
+        }
+        if (maxObjectionsPerMeeting > 0 && ObjectionsUsedThisMeeting >= maxObjectionsPerMeeting)
+        {
+            return;
+        }
+
+        if (voteArea.TargetPlayerId != Client.PlayerId)
+        {
+            return;
+        }
+
+        var hasAnyVotes = meeting.playerStates.Any(pva =>
+    pva.VotedFor != 255 && !pva.AmDead);
+        if (!hasAnyVotes)
+        {
+            return;
+        }
+
+        RpcObjectVotes(Player);
+    }
+
+    [MethodRpc((uint)ExtensionRpc.LawyerObject)]
+    public static void RpcObjectVotes(PlayerControl lawyer)
+    {
+        var lawyerRole = lawyer.GetRole<LawyerRole>();
+        if (lawyerRole == null || lawyerRole.Client == null || lawyerRole.Client.HasDied())
+        {
+            return;
+        }
+
+        var maxObjections = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjections;
+        if (lawyerRole.ObjectionsUsed >= maxObjections)
+        {
+            return;
+        }
+
+        lawyerRole.ObjectionsUsed++; lawyerRole.ObjectionsUsedThisMeeting++; lawyerRole.HasObjected = true;
+
+        TouAudio.PlaySound(TouExtensionAudio.ObjectionSound);
+
+        var lawyerName = lawyer.Data.PlayerName;
+        var title = $"<color=#{TownOfUsColors.Lawyer.ToHtmlStringRGBA()}>{TouLocale.Get("ExtensionRoleLawyer")}</color>";
+        var message = TouLocale.Get("ExtensionLawyerObjectionNotification")
+            .Replace("<lawyer>", lawyerName);
+
+        MiscUtils.AddFakeChat(lawyer.Data, title, message, false, true);
+
+        var meeting = MeetingHud.Instance;
+        if (meeting == null)
+        {
+            return;
+        }
+
+        foreach (var voteArea in meeting.playerStates)
+        {
+            if (voteArea.VotedFor != 255 && !voteArea.AmDead)
+            {
+                var voter = MiscUtils.PlayerById(voteArea.TargetPlayerId);
+                if (voter == null)
+                {
+                    continue;
+                }
+
+                voteArea.UnsetVote();
+
+                var voteData = voter.GetVoteData();
+                var removedCount = voteData.Votes.Count;
+                voteData.Votes.Clear();
+                voteData.VotesRemaining += removedCount;
+
+                if (!lawyerRole.ObjectedVoters.Contains(voteArea.TargetPlayerId))
+                {
+                    lawyerRole.ObjectedVoters.Add(voteArea.TargetPlayerId);
+                }
+
+                if (voter.AmOwner)
+                {
+                    meeting.ClearVote();
+                }
+            }
+        }
+
+        if (AmongUsClient.Instance.AmHost)
+        {
+            meeting.SetDirtyBit(1U);
+        }
+
+        var maxObjectionsPerMeeting = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjectionsPerMeeting;
+        bool objectionsExhausted = false;
+        if (maxObjections > 0 && lawyerRole.ObjectionsUsed >= maxObjections)
+        {
+            objectionsExhausted = true;
+        }
+        if (maxObjectionsPerMeeting > 0 && lawyerRole.ObjectionsUsedThisMeeting >= maxObjectionsPerMeeting)
+        {
+            objectionsExhausted = true;
+        }
+
+        if (objectionsExhausted && lawyerRole.meetingMenu != null && lawyerRole.Client != null)
+        {
+            lawyerRole.meetingMenu.HideSingle(lawyerRole.Client.PlayerId);
         }
     }
 
