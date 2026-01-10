@@ -97,7 +97,10 @@ public sealed class WitchRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsRo
 
         if (shouldSpell)
         {
-            TouAudio.PlaySound(TouExtensionAudio.WitchLaugh);
+            if (PlayerControl.LocalPlayer == witch)
+            {
+                TouAudio.PlaySound(TouExtensionAudio.WitchLaugh);
+            }
             QueueSpellNotification(target);
         }
     }
