@@ -48,6 +48,7 @@ public partial class TouMiraRolesExtensionPlugin : BasePlugin, IMiraPlugin
         ReactorCredits.Register("Tou Mira Roles Extension", Version, IsDevBuild, ReactorCredits.AlwaysShow);
         IL2CPPChainloader.Instance.Finished += Modules.ExtensionLocale.SearchInternalLocale; // Initialise AFTER the mods are loaded to ensure maximum parity (no need for the soft dependency either then)
         IL2CPPChainloader.Instance.Finished += Patches.LawyerTeamChatRegistration.Register; // Register lawyer team chat after mods are loaded
+        IL2CPPChainloader.Instance.Finished += Patches.ExtensionLawyerWinPatch.Register; // Register lawyer win condition checker
 
         Harmony.PatchAll();
     }

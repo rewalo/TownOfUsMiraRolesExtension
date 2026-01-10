@@ -225,7 +225,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         GhostRole = (RoleTypes)RoleId.Get<NeutralGhostRole>()
     };
 
-    public bool MetWinCon => !ClientVoted && Client != null && !Client.HasDied();
+    public bool MetWinCon => Client != null && !Client.HasDied();
 
     public bool WinConditionMet()
     {
@@ -234,7 +234,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             return false;
         }
 
-        return !ClientVoted && Client != null && !Client.HasDied();
+        return Client != null && !Client.HasDied();
     }
 
     public override void Initialize(PlayerControl player)
@@ -622,11 +622,6 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
     public override bool DidWin(GameOverReason gameOverReason)
     {
         if (Client == null || Client.HasDied())
-        {
-            return false;
-        }
-
-        if (ClientVoted)
         {
             return false;
         }
