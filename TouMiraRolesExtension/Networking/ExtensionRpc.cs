@@ -9,5 +9,6 @@ public enum ExtensionRpc : uint
     SendClientChat,
     WitchSpell,
     WitchSpellNotification,
-    LawyerObject
+    LawyerObject,
+    ForestallerReveal
 }

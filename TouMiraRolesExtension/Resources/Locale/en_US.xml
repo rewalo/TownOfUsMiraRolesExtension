@@ -127,4 +127,20 @@
   <!-- Witch Notifications -->
   <string name="ExtensionWitchSpellNotification">&lt;player&gt; has been cursed! They have &lt;meetings&gt; meeting(s) left. Vote out or kill the Witch to save them!</string>
   <string name="ExtensionWitchSpellNotificationMultiple">Multiple players have been cursed:\n&lt;players&gt;\nVote out or kill the Witch to save them!</string>
+
+  <!-- Forestaller Role -->
+  <string name="ExtensionRoleForestaller">Forestaller</string>
+  <string name="ExtensionRoleForestallerIntroBlurb">Complete all tasks to disable sabotages.</string>
+  <string name="ExtensionRoleForestallerTabDescription">Finish all of your tasks. Once you do, sabotages cannot be called while you are alive.</string>
+  <string name="ExtensionRoleForestallerWikiDescription">The Forestaller is a Crewmate support role. After completing all tasks, sabotages are disabled while the Forestaller is alive. The Forestaller is revealed after finishing their last task.</string>
+
+  <!-- Forestaller Options -->
+  <string name="ExtensionOptionForestallerExtraShortTasks">Extra Short Tasks</string>
+  <string name="ExtensionOptionForestallerExtraLongTasks">Extra Long Tasks</string>
+  <string name="ExtensionOptionForestallerRevealTiming">Reveal Timing</string>
+  <string name="ExtensionOptionForestallerRevealTimingEnumNextMeeting">Next Meeting</string>
+  <string name="ExtensionOptionForestallerRevealTimingEnumInstant">Instant</string>
+
+  <!-- Forestaller Announcement -->
+  <string name="ExtensionForestallerSabotagesDisabledAnnouncement">Forestaller has completed all tasks. Sabotages are now disabled.</string>
 </resources>
