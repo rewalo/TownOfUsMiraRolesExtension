@@ -118,6 +118,11 @@ public static class SerialKillerEvents
             return;
         }
 
+        if (MeetingHud.Instance || ExileController.Instance)
+        {
+            return;
+        }
+
         if (SerialKillerVentKillSystem.TryGetVentKillTarget(killer.PlayerId, out var ventTarget) && ventTarget != null && ventTarget.PlayerId == victim.PlayerId)
         {
             SerialKillerVentKillSystem.ClearForPlayer(killer.PlayerId);
