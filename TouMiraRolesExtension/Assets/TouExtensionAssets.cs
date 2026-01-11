@@ -10,5 +10,6 @@ namespace TouMiraRolesExtension.Assets
     public static LoadableAsset<Sprite> ObjectionAnimationSprite { get; } = new LoadableResourceAsset("TouMiraRolesExtension.Resources.Objection!.png");
     public static LoadableAsset<Sprite> LanternSprite { get; } = new LoadableResourceAsset("TouMiraRolesExtension.Resources.Lantern.png");
     public static LoadableAsset<Sprite> BrokenLanternSprite { get; } = new LoadableResourceAsset("TouMiraRolesExtension.Resources.BrokenLantern.png");
+    public static LoadableAsset<Sprite> MirageRoleIcon { get; } = new LoadableResourceAsset("TouMiraRolesExtension.Resources.Mirage_Role_Icon.png");
     }
 }

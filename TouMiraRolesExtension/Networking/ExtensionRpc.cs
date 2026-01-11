@@ -13,5 +13,13 @@ public enum ExtensionRpc : uint
     ForestallerReveal,
     WraithPlaceLantern,
     WraithReturnLantern,
-    WraithBreakLantern
+    WraithBreakLantern,
+
+    MiragePlaceDecoy,
+    MirageDestroyDecoy,
+    MirageTriggerDecoy,
+
+    // Added for Mirage decoy refactor:
+    // Prime spawns the decoy once (hidden), Place reveals the existing instance.
+    MiragePrimeDecoy
 }
