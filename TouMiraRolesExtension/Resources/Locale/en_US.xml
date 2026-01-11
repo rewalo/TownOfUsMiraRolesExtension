@@ -55,7 +55,7 @@
   <string name="ExtensionRoleLawyerTabDescription">Defend &lt;client&gt;. If they get voted out, you lose!</string>
   <string name="ExtensionRoleLawyerWikiDescription">The Lawyer is a Neutral Benign role that wins by keeping their assigned client from being voted out. If their client gets voted out, the Lawyer loses.</string>
   <string name="ExtensionRoleLawyerObject">Object</string>
-  <string name="ExtensionRoleLawyerObjectWikiDescription">During meetings, click the Object button next to Skip to enable objection mode. Then click the objection button on your client's vote area to object to all votes, clearing them and forcing players to vote again.</string>
+  <string name="ExtensionRoleLawyerObjectWikiDescription">During meetings, click the objection button on your client's vote area to object to all votes, clearing them and forcing players to vote again.</string>
   
   <!-- Lawyer Options -->
   <string name="ExtensionOptionLawyerDieOnClientDeath">Lawyer Dies When Client Dies</string>
@@ -170,7 +170,7 @@
   <string name="ExtensionRoleMirageTabDescription">Prime a decoy, then place it. If anyone touches it, it vanishes and you are notified.</string>
   <string name="ExtensionRoleMirageWikiDescription">The Mirage is a Crewmate Support role that can place a decoy with the appearance of a chosen target (yourself or a random player). If any player touches the decoy, it disappears instantly and both the Mirage and the toucher receive a notification. Note: Mirage cannot be guessed if the decoy has the appearance of yourself.</string>
   <string name="ExtensionRoleMirageDecoy">Decoy</string>
-  <string name="ExtensionRoleMirageDecoyWikiDescription">Prime to enter placement mode (a preview follows you). Press again to place the decoy. While active, the button becomes Destroy.</string>
+  <string name="ExtensionRoleMirageDecoyWikiDescription">Prime to prepare a decoy for placement. Press again to place the decoy. While active, the button becomes Destroy.</string>
 
   <!-- Mirage Button -->
   <string name="ExtensionRoleMirageDecoyPrime">Prime</string>
