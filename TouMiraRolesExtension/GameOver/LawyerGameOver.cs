@@ -50,52 +50,22 @@ public sealed class LawyerGameOver : CustomGameOver
 
     public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        // Determine the display based on any alive Lawyer's current Client.
-        // Avoid WinConditionMet() here because it may rely on non-networked transient state.
-        var client = PlayerControl.AllPlayerControls.ToArray()
-            .Where(p => p != null && !p.HasDied() && p.IsRole<LawyerRole>())
-            .Select(p => p.GetRole<LawyerRole>())
-            .Where(l => l != null && l.Client != null && !l.Client.HasDied())
-            .Select(l => l!.Client)
-            .FirstOrDefault();
-        
-        var (winColor, winText) = DetermineWinCondition(client);
+        // Win-stealing neutral: always show Lawyer win, and REPLACE the base WinText
+        // (don't instantiate another TMP text, otherwise you see "Crewmates Win" underneath).
+        var (winColor, winText) = DetermineWinCondition();
         SetWinningFaction(winColor, winText);
 
         endGameManager.BackgroundBar.material.SetColor(ShaderID.Color, winColor);
 
-        var text = Object.Instantiate(endGameManager.WinText);
-        text.text = $"{winText}!";
-        text.color = winColor;
-
-        var pos = endGameManager.WinText.transform.localPosition;
-        pos.y = 1.5f;
-        pos += Vector3.down * 0.15f;
-        text.transform.localScale = new Vector3(1f, 1f, 1f);
-
-        text.transform.position = pos;
-        text.text = $"<size=4>{text.text}</size>";
+        var baseText = endGameManager.WinText;
+        baseText.color = winColor;
+        baseText.text = $"<size=4>{winText}!</size>";
     }
 
-    private static (Color winColor, string winText) DetermineWinCondition(PlayerControl? client)
+    private static (Color winColor, string winText) DetermineWinCondition()
     {
-        if (client != null && client.Data != null && client.Data.Role != null)
-        {
-            var clientRole = client.Data.Role;
-            
-            if (client.IsImpostorAligned())
-            {
-                return (Palette.ImpostorRed, TouLocale.Get("ImpostorWin", "Impostors Win"));
-            }
-            
-            if (clientRole is ICustomRole customRole && customRole.Team == ModdedRoleTeams.Custom)
-            {
-                var roleName = Helpers.GetRoleName(clientRole);
-                return (clientRole.TeamColor, $"{roleName} {TouLocale.Get("Wins", "Wins")}");
-            }
-        }
-        
-        return (TownOfUsColors.Lawyer, $"{TouLocale.Get("ExtensionRoleLawyer", "Lawyer")} {TouLocale.Get("ExtensionLawyerWin", "Wins")}");
+        return (TownOfUsColors.Lawyer,
+            $"{TouLocale.Get("ExtensionRoleLawyer", "Lawyer")} {TouLocale.Get("ExtensionLawyerWin", "Wins")}");
     }
 
     private static void SetWinningFaction(Color winColor, string winText)

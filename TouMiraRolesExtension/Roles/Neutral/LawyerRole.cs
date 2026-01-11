@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Text.RegularExpressions;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Attributes;
@@ -21,6 +22,7 @@ using TownOfUs.Roles.Crewmate;
 using TownOfUs.Roles.Other;
 using TownOfUs.Utilities;
 using TouMiraRolesExtension.Modifiers;
+using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Networking;
 using TouMiraRolesExtension.Options.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
@@ -46,6 +48,10 @@ namespace TouMiraRolesExtension.Roles.Neutral;
 public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRole, IWikiDiscoverable, IDoomable,
     IAssignableTargets, ICrewVariant
 {
+    private const float NoObjectLastSeconds = 20f;
+    private static readonly Regex SecondsRegex = new(@"(\d+)\s*s", RegexOptions.IgnoreCase);
+    private static readonly Regex LastNumberRegex = new(@"(\d+)(?!.*\d)");
+
     public PlayerControl? Client { get; set; }
     public bool ClientVoted { get; set; }
     public bool AboutToWin { get; set; }
@@ -269,7 +275,9 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                 meetingMenu = new MeetingMenu(this, OnObjectClick, MeetingAbilityType.Click,
                     TouExtensionAssets.ObjectionButtonSprite, TouExtensionAssets.ObjectionButtonSprite, IsExemptForObjection)
                 {
-                    Position = Vector3.zero
+                    // Ensure the button isn't spawned behind the vote area (z must be negative).
+                    // We re-position precisely in ScaleObjectionButton(), but a sane default prevents "not rendering".
+                    Position = new Vector3(-0.35f, 0f, -3f)
                 };
             }
         }
@@ -390,13 +398,11 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             var maxObjections = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjections;
             var maxObjectionsPerMeeting = (int)OptionGroupSingleton<LawyerOptions>.Instance.MaxObjectionsPerMeeting;
 
-            if (maxObjections <= 0 && maxObjectionsPerMeeting <= 0)
+            if (!meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var buttonGo) || buttonGo == null)
             {
-                if (meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var button) && button != null)
-                {
-                    meetingMenu.HideSingle(Client.PlayerId);
-                }
-                continue;
+                // If the button was never created or was destroyed by older logic, regenerate.
+                meetingMenu.GenButtons(meeting, Player.AmOwner && !Player.HasDied() && !Client.HasDied());
+                meetingMenu.Buttons.TryGetValue(Client.PlayerId, out buttonGo);
             }
 
             bool objectionsExhausted = false;
@@ -409,30 +415,21 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                 objectionsExhausted = true;
             }
 
-            bool hideButton = objectionsExhausted ||
-                meeting.state == MeetingHud.VoteStates.Proceeding ||
-                meeting.state == MeetingHud.VoteStates.Results;
+            // Only show during voting states; never destroy (HideSingle) here because that permanently removes the button.
+            var showButton = !objectionsExhausted &&
+                             maxObjections > 0 &&
+                             (meeting.state == MeetingHud.VoteStates.Voted || meeting.state == MeetingHud.VoteStates.NotVoted) &&
+                             !IsInLastSecondsOfVoting(meeting, NoObjectLastSeconds);
 
-            // Hide button in the last 20 seconds of the meeting
-            var discussionTime = GameOptionsManager.Instance.currentNormalGameOptions.DiscussionTime;
-            if (meeting.discussionTimer > discussionTime - 20f)
+            if (buttonGo != null)
             {
-                hideButton = true;
+                buttonGo.SetActive(showButton);
             }
 
-            if (hideButton)
-            {
-                if (meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var button) && button != null)
-                {
-                    meetingMenu.HideSingle(Client.PlayerId);
-                }
-            }
-            else if (meeting.state == MeetingHud.VoteStates.Voted ||
-                     meeting.state == MeetingHud.VoteStates.NotVoted)
+            if (showButton && buttonGo != null)
             {
                 var voteArea = meeting.playerStates.FirstOrDefault(pva => pva.TargetPlayerId == Client.PlayerId);
-                if (voteArea != null && voteArea.NameText != null &&
-                    meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var button) && button != null)
+                if (voteArea != null && voteArea.NameText != null)
                 {
                     voteArea.NameText.ForceMeshUpdate();
 
@@ -447,7 +444,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                     }
 
                     var nameTextLocalPos = voteArea.NameText.transform.localPosition;
-                    button.transform.localPosition = new Vector3(nameTextLocalPos.x + textWidth + 0.15f, nameTextLocalPos.y, -1f);
+                    buttonGo.transform.localPosition = new Vector3(nameTextLocalPos.x + textWidth + 0.15f, nameTextLocalPos.y, -1f);
                 }
             }
         }
@@ -520,14 +517,58 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             return;
         }
 
-        // Prevent objection in the last 20 seconds of the meeting
-        var discussionTime = GameOptionsManager.Instance.currentNormalGameOptions.DiscussionTime;
-        if (meeting.discussionTimer > discussionTime - 20f)
+        if (IsInLastSecondsOfVoting(meeting, NoObjectLastSeconds))
         {
             return;
         }
 
         RpcObjectVotes(Player);
+    }
+
+    private static bool IsInLastSecondsOfVoting(MeetingHud meeting, float seconds)
+    {
+        if (meeting == null)
+        {
+            return false;
+        }
+
+        if (meeting.state is not (MeetingHud.VoteStates.Voted or MeetingHud.VoteStates.NotVoted))
+        {
+            return false;
+        }
+
+        // Avoid reflection (field names differ across builds). Parse the visible timer text instead.
+        // e.g. "Voting ends in: 15s"
+        var remaining = TryGetVotingSecondsRemainingFromUi(meeting);
+        return remaining.HasValue && remaining.Value <= seconds;
+    }
+
+    private static float? TryGetVotingSecondsRemainingFromUi(MeetingHud meeting)
+    {
+        var text = meeting.TimerText != null ? meeting.TimerText.text : null;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        // Strip TMP tags.
+        var cleaned = Regex.Replace(text, "<.*?>", string.Empty);
+
+        // Prefer explicit "15s" style.
+        var match = SecondsRegex.Matches(cleaned).Cast<Match>().LastOrDefault(m => m.Success);
+        if (match != null && int.TryParse(match.Groups[1].Value, out var sec))
+        {
+            return sec;
+        }
+
+        // Fallback: last number in the string.
+        var match2 = LastNumberRegex.Match(cleaned);
+        if (match2.Success && int.TryParse(match2.Groups[1].Value, out var sec2))
+        {
+            return sec2;
+        }
+
+        return null;
     }
 
     [MethodRpc((uint)ExtensionRpc.LawyerObject)]
@@ -643,35 +684,6 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             return true;
         }
 
-        if (gameOverReason is GameOverReason.CrewmatesByVote or GameOverReason.CrewmatesByTask
-            or GameOverReason.ImpostorDisconnect or GameOverReason.HideAndSeek_CrewmatesByTimer)
-        {
-            return false;
-        }
-
-        if (Client.IsImpostorAligned())
-        {
-            return gameOverReason is GameOverReason.ImpostorsByKill or GameOverReason.ImpostorsBySabotage
-                or GameOverReason.ImpostorsByVote or GameOverReason.CrewmateDisconnect
-                or GameOverReason.HideAndSeek_ImpostorsByKills;
-        }
-
-        var clientRole = Client.Data?.Role;
-        if (clientRole is ICustomRole customRole && customRole.Team == ModdedRoleTeams.Custom)
-        {
-            if (gameOverReason == CustomGameOver.GameOverReason<NeutralGameOver>())
-            {
-                return false;
-            }
-
-            if (gameOverReason is GameOverReason.ImpostorsByKill or GameOverReason.ImpostorsBySabotage
-                or GameOverReason.ImpostorsByVote or GameOverReason.CrewmateDisconnect
-                or GameOverReason.HideAndSeek_ImpostorsByKills)
-            {
-                return false;
-            }
-        }
-
         return false;
     }
 
@@ -771,6 +783,9 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         role.Client = client;
 
         client.AddModifier<LawyerTargetModifier>(player.PlayerId);
+
+        // Persist the pairing for end-game UI (even if one/both die or modifiers get cleared).
+        LawyerDuoTracker.SetClient(player.PlayerId, client.PlayerId);
 
         var lawyerRole = RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<LawyerRole>());
         if (!player.HasModifier<LawyerRevealModifier>())

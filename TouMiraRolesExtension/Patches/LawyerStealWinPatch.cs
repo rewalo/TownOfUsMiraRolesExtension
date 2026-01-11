@@ -8,8 +8,9 @@ using TouMiraRolesExtension.Roles.Neutral;
 namespace TouMiraRolesExtension.Patches;
 
 /// <summary>
-/// Steals any non-draw win at the moment the game is about to end, as long as at least one Lawyer + their Client are alive.
-/// This avoids the fragile "predict other win conditions" approach and fixes host-dependent behavior.
+/// Win-stealing neutral:
+/// If any Lawyer and their Client are both alive at the moment the game would end (non-draw),
+/// steal the win and end the game as a Lawyer win (Lawyer + Client are the winners).
 /// </summary>
 [HarmonyPatch(typeof(GameManager), nameof(GameManager.RpcEndGame))]
 public static class LawyerStealWinPatch
@@ -37,14 +38,21 @@ public static class LawyerStealWinPatch
             return true;
         }
 
+        // If someone is currently being exiled, treat them as dead for steal purposes.
+        // This prevents edge-cases where the exiled player hasn't had Data.IsDead set yet
+        // when RpcEndGame fires (e.g. Lawyer being ejected).
+        var exiled = ExileController.Instance?.initData?.networkedPlayer?.Object;
+
         var winningLawyers = PlayerControl.AllPlayerControls.ToArray()
-            .Where(p => p != null && !p.HasDied() && p.IsRole<LawyerRole>())
+            .Where(p => p != null && p.IsRole<LawyerRole>())
             .Select(p => p.GetRole<LawyerRole>())
             .Where(l => l != null &&
                         l.Player != null && !l.Player.HasDied() &&
                         l.Client != null && !l.Client.HasDied() &&
                         l.Player.Data != null &&
-                        l.Client.Data != null)
+                        l.Client.Data != null &&
+                        exiled != l.Player &&
+                        exiled != l.Client)
             .ToList();
 
         if (winningLawyers.Count == 0)
