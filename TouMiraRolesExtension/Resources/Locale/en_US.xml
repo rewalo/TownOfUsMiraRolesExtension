@@ -55,7 +55,7 @@
   <string name="ExtensionRoleLawyerTabDescription">Defend &lt;client&gt;. If they get voted out, you lose!</string>
   <string name="ExtensionRoleLawyerWikiDescription">The Lawyer is a Neutral Benign role that wins by keeping their assigned client from being voted out. If their client gets voted out, the Lawyer loses.</string>
   <string name="ExtensionRoleLawyerObject">Object</string>
-  <string name="ExtensionRoleLawyerObjectWikiDescription">During meetings, click the Object button next to Skip to enable objection mode. Then click the objection button on your client's vote area to object to all votes, clearing them and forcing players to vote again.</string>
+  <string name="ExtensionRoleLawyerObjectWikiDescription">During meetings, click the objection button on your client's vote area to object to all votes, clearing them and forcing players to vote again.</string>
   
   <!-- Lawyer Options -->
   <string name="ExtensionOptionLawyerDieOnClientDeath">Lawyer Dies When Client Dies</string>
@@ -163,4 +163,31 @@
 
   <!-- Forestaller Announcement -->
   <string name="ExtensionForestallerSabotagesDisabledAnnouncement">Forestaller has completed all tasks. Sabotages are now disabled.</string>
+
+  <!-- Mirage Role -->
+  <string name="ExtensionRoleMirage">Mirage</string>
+  <string name="ExtensionRoleMirageIntroBlurb">Place a decoy to bait contact and reveal who touched it.</string>
+  <string name="ExtensionRoleMirageTabDescription">Prime a decoy, then place it. If anyone interacts with it, it vanishes and you are notified.</string>
+  <string name="ExtensionRoleMirageWikiDescription">The Mirage is a Crewmate Support role that can place a decoy with the appearance of a chosen target (yourself or a random player). If any player interacts with the decoy, it disappears instantly and both the Mirage and the toucher receive a notification. Note: Mirage cannot be guessed if the decoy has the appearance of yourself.</string>
+  <string name="ExtensionRoleMirageDecoy">Decoy</string>
+  <string name="ExtensionRoleMirageDecoyWikiDescription">Prime to prepare a decoy for placement. Press again to place the decoy. While active, the button becomes Destroy.</string>
+
+  <!-- Mirage Button -->
+  <string name="ExtensionRoleMirageDecoyPrime">Prime</string>
+  <string name="ExtensionRoleMirageDecoyPlace">Place</string>
+  <string name="ExtensionRoleMirageDecoyDestroy">Destroy</string>
+
+  <!-- Mirage Options -->
+  <string name="ExtensionOptionMirageInitialUses">Initial Uses</string>
+  <string name="ExtensionOptionMirageUsesPerTasks">Uses Per Tasks</string>
+  <string name="ExtensionOptionMirageDecoyCooldown">Decoy Cooldown</string>
+  <string name="ExtensionOptionMirageDecoyDuration">Auto Destroy Cooldown</string>
+  <string name="ExtensionOptionMirageDecoyType">Decoy Type</string>
+  <string name="ExtensionOptionMirageDecoyTypeEnumMirage">Mirage</string>
+  <string name="ExtensionOptionMirageDecoyTypeEnumRandomPlayer">Random Player</string>
+  <string name="ExtensionOptionMirageArrowTime">Arrow Time</string>
+
+  <!-- Mirage Notifications -->
+  <string name="ExtensionRoleMirageInteractorTriggered">You interacted with a decoy!</string>
+  <string name="ExtensionRoleMirageOwnerTriggered">Your decoy was triggered!</string>
 </resources>

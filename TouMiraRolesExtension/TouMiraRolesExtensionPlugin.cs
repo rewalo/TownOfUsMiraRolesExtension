@@ -51,6 +51,7 @@ public partial class TouMiraRolesExtensionPlugin : BasePlugin, IMiraPlugin
         IL2CPPChainloader.Instance.Finished += Modules.ExtensionLocale.SearchInternalLocale; // Initialise AFTER the mods are loaded to ensure maximum parity (no need for the soft dependency either then)
         IL2CPPChainloader.Instance.Finished += LawyerTeamChatRegistration.Register; // Register lawyer team chat after mods are loaded
         Harmony.PatchAll();
+        WinConditionRegistry.Register(new LawyerDuoWinCondition());
         WinConditionRegistry.Register(new LawyerParityWinCondition());
     }
 }

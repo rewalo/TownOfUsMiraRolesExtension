@@ -77,8 +77,8 @@ public sealed class SerialKillerManiacModifier(float timerDuration, float cooldo
 
     public override void FixedUpdate()
     {
-        base.FixedUpdate();
-
+        // Important: don't tick the underlying TimedModifier during meetings.
+        // Guessing can cause murders during meetings, and we never want the Maniac timer to advance (or complete) there.
         if (!Player.AmOwner || Player.HasDied() || MeetingHud.Instance)
         {
             soundTimer = 1f;
@@ -105,6 +105,9 @@ public sealed class SerialKillerManiacModifier(float timerDuration, float cooldo
             }
             return;
         }
+
+        // Only tick the timer when it's actually allowed to run.
+        base.FixedUpdate();
 
         var roundedTime = (int)Math.Round(Math.Max(TimeRemaining, 0f), 0f);
 
@@ -170,6 +173,12 @@ public sealed class SerialKillerManiacModifier(float timerDuration, float cooldo
 
     public override void OnTimerComplete()
     {
+        if (MeetingHud.Instance || ExileController.Instance)
+        {
+            ResetTimer();
+            return;
+        }
+
         if (Player.AmOwner && !Player.HasDied())
         {
             Player.RpcCustomMurder(Player);

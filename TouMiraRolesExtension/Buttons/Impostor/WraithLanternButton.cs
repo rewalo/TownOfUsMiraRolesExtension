@@ -24,6 +24,30 @@ public sealed class WraithLanternButton : TownOfUsRoleButton<WraithRole>
     private string _returnName = string.Empty;
     private bool _isProcessingClick;
 
+    private static bool CanPlaceLanternAt(PlayerControl player, Vector2 pos)
+    {
+        // Similar to Miner/Sentry placement: require open space + no wall collision.
+        var hits = Physics2D.OverlapBoxAll(pos, Vector2.one * 0.55f, 0);
+        hits = hits.Where(c =>
+                c != null &&
+                c.gameObject.layer != 8 &&
+                c.gameObject.layer != 5 &&
+                player.Collider != null &&
+                c != player.Collider &&
+                !c.transform.IsChildOf(player.transform) &&
+                (c.name.Contains("Vent") || c.name.Contains("Door") || !c.isTrigger))
+            .ToArray();
+
+        var noWallConflict = player.Collider != null &&
+                             !PhysicsHelpers.AnythingBetween(player.Collider,
+                                 player.Collider.bounds.center,
+                                 pos,
+                                 Constants.ShipAndAllObjectsMask,
+                                 false);
+
+        return hits.Length == 0 && noWallConflict && !ModCompatibility.GetPlayerElevator(player).Item1;
+    }
+
     public override string Name => TouLocale.GetParsed("ExtensionRoleWraithLanternPlace", "Lantern");
     public override BaseKeybind Keybind => Keybinds.SecondaryAction;
     public override Color TextOutlineColor => TouExtensionColors.Wraith;
@@ -65,6 +89,16 @@ public sealed class WraithLanternButton : TownOfUsRoleButton<WraithRole>
             }
 
             return true;
+        }
+
+        // Placing: don't allow dropping lanterns in/too near walls.
+        if (PlayerControl.LocalPlayer != null)
+        {
+            var pos = PlayerControl.LocalPlayer.GetTruePosition();
+            if (!CanPlaceLanternAt(PlayerControl.LocalPlayer, pos))
+            {
+                return false;
+            }
         }
 
         return base.CanUse();
@@ -184,7 +218,13 @@ public sealed class WraithLanternButton : TownOfUsRoleButton<WraithRole>
             return;
         }
 
-        WraithRole.RpcWraithPlaceLantern(player, player.GetTruePosition());
+        var pos = player.GetTruePosition();
+        if (!CanPlaceLanternAt(player, pos))
+        {
+            return;
+        }
+
+        WraithRole.RpcWraithPlaceLantern(player, pos);
     }
 
     public override void OnEffectEnd()
