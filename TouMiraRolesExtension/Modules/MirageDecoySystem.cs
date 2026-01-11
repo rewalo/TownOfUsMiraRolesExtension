@@ -21,6 +21,7 @@ public static class MirageDecoySystem
         bool IsVisible);
 
     private static readonly Dictionary<byte, ActiveDecoy> ActiveByMirage = new();
+    private static CosmeticsLayer? LocalOutlinedCosmetics;
     private static SpriteRenderer? LocalOutlinedBody;
 
     /// <summary>Decoy exists (primed-hidden or revealed-visible).</summary>
@@ -32,20 +33,37 @@ public static class MirageDecoySystem
 
     public static void ClearLocalOutline()
     {
-        if (LocalOutlinedBody == null)
+        if (LocalOutlinedCosmetics == null && LocalOutlinedBody == null)
         {
             return;
         }
 
         try
         {
-            LocalOutlinedBody.SetOutline((Color?)null);
+            if (LocalOutlinedCosmetics != null)
+            {
+                LocalOutlinedCosmetics.SetOutline(false, new Il2CppSystem.Nullable<Color>(Color.clear));
+
+                try
+                {
+                    LocalOutlinedCosmetics.currentBodySprite?.BodySprite?.SetOutline((Color?)null);
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+            else if (LocalOutlinedBody != null)
+            {
+                LocalOutlinedBody.SetOutline((Color?)null);
+            }
         }
         catch
         {
             // ignore
         }
 
+        LocalOutlinedCosmetics = null;
         LocalOutlinedBody = null;
     }
 
@@ -57,8 +75,8 @@ public static class MirageDecoySystem
             return;
         }
 
-        // Find closest decoy in range and outline it.
         var bestDist = float.MaxValue;
+        CosmeticsLayer? bestCosmetics = null;
         SpriteRenderer? bestBody = null;
 
         foreach (var kvp in ActiveByMirage)
@@ -90,20 +108,22 @@ public static class MirageDecoySystem
             }
 
             bestDist = d;
+            bestCosmetics = cosmetics;
             bestBody = body;
         }
 
-        if (bestBody == null)
+        if (bestCosmetics == null || bestBody == null)
         {
             ClearLocalOutline();
             return;
         }
 
-        if (LocalOutlinedBody != null && LocalOutlinedBody != bestBody)
+        if ((LocalOutlinedCosmetics != null && LocalOutlinedCosmetics != bestCosmetics) ||
+            (LocalOutlinedBody != null && LocalOutlinedBody != bestBody))
         {
             try
             {
-                LocalOutlinedBody.SetOutline((Color?)null);
+                ClearLocalOutline();
             }
             catch
             {
@@ -111,9 +131,11 @@ public static class MirageDecoySystem
             }
         }
 
+        LocalOutlinedCosmetics = bestCosmetics;
         LocalOutlinedBody = bestBody;
         try
         {
+            LocalOutlinedCosmetics.SetOutline(true, new Il2CppSystem.Nullable<Color>(color));
             LocalOutlinedBody.SetOutline((Color?)color);
         }
         catch
@@ -208,7 +230,6 @@ public static class MirageDecoySystem
 
         fake.body.transform.position = worldPos;
 
-        // Hidden for everyone except the Mirage's owner client (preview).
         var alpha = (PlayerControl.LocalPlayer != null && PlayerControl.LocalPlayer.PlayerId == mirageId) ? 0.35f : 0f;
         SetAlpha(fake.body, alpha);
 
@@ -231,7 +252,6 @@ public static class MirageDecoySystem
             return;
         }
 
-        // Fallback: create visible if something went wrong and we have no primed instance.
         if (appearanceSource == null)
         {
             return;
@@ -267,7 +287,6 @@ public static class MirageDecoySystem
             return false;
         }
 
-        // Already revealed: just refresh expiry (host enforces expiry, but keep clients consistent).
         var now = Time.time;
         var expiresAt = durationSeconds <= 0f ? float.PositiveInfinity : now + Mathf.Max(0.1f, durationSeconds);
         SetAlpha(entry.Fake.body, 1f);
@@ -275,9 +294,6 @@ public static class MirageDecoySystem
         ActiveByMirage[mirageId] = entry with { ExpiresAt = expiresAt, IsVisible = true };
         return true;
     }
-
-    // NOTE: Cosmetic positioning is fixed at the source: we patch TownOfUs' FakePlayer constructor to copy
-    // CosmeticsLayer offsets + custom hat/visor positions from the source player. That makes SetFlipX work normally.
 
     public static bool TryRemoveDecoy(byte mirageId, out Vector2 lastPos)
     {
@@ -342,7 +358,6 @@ public static class MirageDecoySystem
             sr.color = c;
         }
 
-        // FakePlayer nameplate + colorblind name are TextMeshPro, not SpriteRenderers.
         foreach (var tmp in root.GetComponentsInChildren<TMP_Text>(true))
         {
             if (tmp == null)

@@ -21,11 +21,20 @@ public static class MirageDecoyHighlightPatches
 
         if (__instance.KillButton != null &&
             __instance.KillButton.isActiveAndEnabled &&
-            !__instance.KillButton.isCoolingDown &&
-            IsLocalNearAnyDecoy(GetKillDistance()))
+            !__instance.KillButton.isCoolingDown)
         {
-            __instance.KillButton.SetEnabled();
-            ForceActionButtonVisualEnabled(__instance.KillButton);
+            var local = PlayerControl.LocalPlayer;
+            var dist = GetKillDistance();
+            if (local != null && IsLocalNearAnyDecoy(dist))
+            {
+                __instance.KillButton.SetEnabled();
+                ForceActionButtonVisualEnabled(__instance.KillButton);
+                MirageDecoySystem.UpdateLocalOutline(local.GetTruePosition(), dist, Palette.ImpostorRed);
+            }
+            else
+            {
+                MirageDecoySystem.ClearLocalOutline();
+            }
         }
     }
 
