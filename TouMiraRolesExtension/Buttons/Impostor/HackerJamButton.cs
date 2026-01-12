@@ -15,7 +15,9 @@ namespace TouMiraRolesExtension.Buttons.Impostor;
 public sealed class HackerJamButton : TownOfUsRoleButton<HackerRole>
 {
     public override string Name => TouLocale.GetParsed("ExtensionRoleHackerJam", "Jam");
-    public override BaseKeybind Keybind => Keybinds.TertiaryAction;
+    public override BaseKeybind Keybind => OptionGroupSingleton<HackerOptions>.Instance.SimpleModeJamOnly
+        ? Keybinds.SecondaryAction // F in simple mode
+        : Keybinds.ModifierAction; // I when not in simple mode
     public override Color TextOutlineColor => TouExtensionColors.Hacker;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<HackerOptions>.Instance.JamCooldownSeconds + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<HackerOptions>.Instance.JamDurationSeconds;

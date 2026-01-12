@@ -168,6 +168,8 @@
   <string name="ExtensionOptionHackerBatteryPerDownloadSecond">Battery Gained Per Download Second</string>
   <string name="ExtensionOptionHackerDownloadRange">Download Range</string>
   <string name="ExtensionOptionHackerMoveWithDevice">Move While Using Device</string>
+  <string name="ExtensionOptionHackerSimpleModeJamOnly">Simple Mode (Jam Only)</string>
+  <string name="ExtensionOptionHackerInitialJamCharges">Initial Jam Charges</string>
   <string name="ExtensionOptionHackerJamChargesPerKill">Jam Charges Per Kill</string>
   <string name="ExtensionOptionHackerJamMaxCharges">Max Jam Charges</string>
   <string name="ExtensionOptionHackerJamCooldown">Jam Cooldown</string>

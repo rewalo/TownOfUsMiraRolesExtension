@@ -11,6 +11,9 @@ public sealed class HackerOptions : AbstractOptionGroup<HackerRole>
 {
     public override string GroupName => TouLocale.Get("ExtensionRoleHacker", "Hacker");
 
+    [ModdedToggleOption("ExtensionOptionHackerSimpleModeJamOnly")]
+    public bool SimpleModeJamOnly { get; set; } = false;
+
     [ModdedNumberOption("ExtensionOptionHackerMaxBatterySeconds", 3f, 15f, 1f, MiraNumberSuffixes.Seconds)]
     public float MaxBatterySeconds { get; set; } = 10f;
 
@@ -22,6 +25,9 @@ public sealed class HackerOptions : AbstractOptionGroup<HackerRole>
 
     [ModdedToggleOption("ExtensionOptionHackerMoveWithDevice")]
     public bool MoveWithDevice { get; set; } = true;
+
+    [ModdedNumberOption("ExtensionOptionHackerInitialJamCharges", 0f, 10f, 1f, MiraNumberSuffixes.None)]
+    public float InitialJamCharges { get; set; } = 0f;
 
     [ModdedNumberOption("ExtensionOptionHackerJamChargesPerKill", 0f, 5f, 1f, MiraNumberSuffixes.None)]
     public float JamChargesPerKill { get; set; } = 1f;
@@ -35,5 +41,6 @@ public sealed class HackerOptions : AbstractOptionGroup<HackerRole>
     [ModdedNumberOption("ExtensionOptionHackerJamDuration", 5f, 20f, 2.5f, MiraNumberSuffixes.Seconds)]
     public float JamDurationSeconds { get; set; } = 10f;
 
-    public bool JamEnabled => JamChargesPerKill > 0f && JamMaxCharges > 0f;
+    public bool JamEnabled =>
+        JamMaxCharges > 0f && (SimpleModeJamOnly || JamChargesPerKill > 0f || InitialJamCharges > 0f);
 }

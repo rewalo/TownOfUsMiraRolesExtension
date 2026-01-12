@@ -19,11 +19,16 @@ public sealed class HackerDownloadButton : TownOfUsRoleButton<HackerRole>
     private float _lastUpdateTime;
     public override string Name => TouLocale.GetParsed("ExtensionRoleHackerDownload", "Download");
 
-    public override BaseKeybind Keybind => Keybinds.ModifierAction;
+    public override BaseKeybind Keybind => Keybinds.SecondaryAction; // F (portable-equipment key)
     public override Color TextOutlineColor => TouExtensionColors.Hacker;
     public override float Cooldown => 0.5f;
     public override LoadableAsset<Sprite> Sprite => TouExtensionImpAssets.HackerDownloadButtonSprite;
     public override bool ZeroIsInfinite { get; set; } = true;
+
+    public override bool Enabled(RoleBehaviour? role)
+    {
+        return base.Enabled(role) && !OptionGroupSingleton<HackerOptions>.Instance.SimpleModeJamOnly;
+    }
 
     public override bool CanUse()
     {

@@ -23,12 +23,19 @@ public sealed class HackerDeviceButton : TownOfUsRoleButton<HackerRole>
     private bool _usingAdminMap;
 
     public override string Name => TouLocale.GetParsed("ExtensionRoleHackerDevice", "Device");
-    public override BaseKeybind Keybind => Keybinds.SecondaryAction;
+    public override BaseKeybind Keybind => OptionGroupSingleton<HackerOptions>.Instance.SimpleModeJamOnly
+        ? Keybinds.SecondaryAction
+        : Keybinds.TertiaryAction; // U when not in simple mode
     public override Color TextOutlineColor => TouExtensionColors.Hacker;
     public override float Cooldown => 0.001f;
     public override LoadableAsset<Sprite> Sprite => TouExtensionImpAssets.HackerDeviceGenericSprite;
 
     public override bool ZeroIsInfinite { get; set; } = true;
+
+    public override bool Enabled(RoleBehaviour? role)
+    {
+        return base.Enabled(role) && !OptionGroupSingleton<HackerOptions>.Instance.SimpleModeJamOnly;
+    }
 
     public override bool CanUse()
     {
