@@ -3,7 +3,10 @@ using MiraAPI.GameEnd;
 using TownOfUs.GameOver;
 using TownOfUs.Utilities;
 using TouMiraRolesExtension.GameOver;
+using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Roles.Neutral;
+using TouMiraRolesExtension.Utilities;
+using MiraAPI.Modifiers;
 
 namespace TouMiraRolesExtension.Patches;
 
@@ -32,6 +35,12 @@ public static class LawyerStealWinPatch
             return true;
         }
 
+        // Never steal forced host-abort end-games (host keybind).
+        if (endReason == CustomGameOver.GameOverReason<HostGameOver>())
+        {
+            return true;
+        }
+
         // Draws aren't a "win" to steal.
         if (endReason == CustomGameOver.GameOverReason<DrawGameOver>())
         {
@@ -43,29 +52,40 @@ public static class LawyerStealWinPatch
         // when RpcEndGame fires (e.g. Lawyer being ejected).
         var exiled = ExileController.Instance?.initData?.networkedPlayer?.Object;
 
-        var winningLawyers = PlayerControl.AllPlayerControls.ToArray()
-            .Where(p => p != null && p.IsRole<LawyerRole>())
-            .Select(p => p.GetRole<LawyerRole>())
-            .Where(l => l != null &&
-                        l.Player != null && !l.Player.HasDied() &&
-                        l.Client != null && !l.Client.HasDied() &&
-                        l.Player.Data != null &&
-                        l.Client.Data != null &&
-                        exiled != l.Player &&
-                        exiled != l.Client)
-            .ToList();
-
-        if (winningLawyers.Count == 0)
-        {
-            return true;
-        }
-
         var winners = new HashSet<NetworkedPlayerInfo>();
-        foreach (var lawyer in winningLawyers)
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
         {
-            lawyer!.AboutToWin = true;
-            winners.Add(lawyer.Player!.Data);
-            winners.Add(lawyer.Client!.Data);
+            if (lawyerPc == null || !lawyerPc.IsRole<LawyerRole>())
+            {
+                continue;
+            }
+
+            if (lawyerPc.HasDied() || lawyerPc.Data == null || exiled == lawyerPc)
+            {
+                continue;
+            }
+
+            // Find the client via replicated modifier to avoid relying on l.Client (which can be null/desynced).
+            var client = LawyerUtils.FindClientForLawyer(lawyerPc.PlayerId);
+            if (client == null || client.HasDied() || client.Data == null || exiled == client)
+            {
+                continue;
+            }
+
+            // Sanity: ensure the client is actually marked as this lawyer's client.
+            if (!client.HasModifier<LawyerTargetModifier>(m => m.OwnerId == lawyerPc.PlayerId))
+            {
+                continue;
+            }
+
+            var lawyerRole = lawyerPc.GetRole<LawyerRole>();
+            if (lawyerRole != null)
+            {
+                lawyerRole.AboutToWin = true;
+            }
+
+            winners.Add(lawyerPc.Data);
+            winners.Add(client.Data);
         }
 
         // Sanity: LawyerGameOver expects at least Lawyer + Client.

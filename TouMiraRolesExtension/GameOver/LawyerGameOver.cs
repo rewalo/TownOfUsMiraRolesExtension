@@ -19,39 +19,62 @@ public sealed class LawyerGameOver : CustomGameOver
 {
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        // Must have at least 2 winners (at least one lawyer and one client)
-        if (winners.Length < 2)
+        if (winners == null || winners.Length < 2)
         {
             return false;
         }
 
-        // The winners array is what gets replicated for this CustomGameOver.
-        // Do NOT depend on local, non-networked role state (e.g. AboutToWin/WinConditionMet),
-        // otherwise non-host clients can fall back to vanilla end-game results.
-        if (!winners.Any(w => w.Object == playerControl))
+        var winningLawyers = winners
+            .Select(w => w?.Object)
+            .Where(pc => pc != null && pc.IsRole<LawyerRole>())
+            .Cast<PlayerControl>()
+            .ToArray();
+
+        if (winningLawyers.Length == 0)
         {
             return false;
         }
 
-        // Check if the player is a winning lawyer
-        if (playerControl.GetRole<LawyerRole>() != null)
+        foreach (var w in winners)
         {
-            return true;
+            var pc = w?.Object;
+            if (pc == null)
+            {
+                return false;
+            }
+
+            if (pc.IsRole<LawyerRole>())
+            {
+                continue;
+            }
+
+            var ok = winningLawyers.Any(lawyerPc => LawyerUtils.IsClientOfLawyer(pc, lawyerPc.PlayerId));
+            if (!ok)
+            {
+                return false;
+            }
         }
 
-        // Check if the player is a client of any winning lawyer
-        if (LawyerUtils.IsClientOfAnyLawyer(playerControl))
+        foreach (var lawyerPc in winningLawyers)
         {
-            return true;
+            var hasClientWinner = winners.Any(w =>
+            {
+                var obj = w?.Object;
+                return obj != null &&
+                       !obj.IsRole<LawyerRole>() &&
+                       LawyerUtils.IsClientOfLawyer(obj, lawyerPc.PlayerId);
+            });
+            if (!hasClientWinner)
+            {
+                return false;
+            }
         }
 
-        return false;
+        return true;
     }
 
     public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        // Win-stealing neutral: always show Lawyer win, and REPLACE the base WinText
-        // (don't instantiate another TMP text, otherwise you see "Crewmates Win" underneath).
         var (winColor, winText) = DetermineWinCondition();
         SetWinningFaction(winColor, winText);
 

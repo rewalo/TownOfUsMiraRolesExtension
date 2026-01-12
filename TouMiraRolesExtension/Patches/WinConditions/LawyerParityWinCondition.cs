@@ -3,7 +3,9 @@ using TownOfUs.Interfaces;
 using TownOfUs.Roles;
 using TownOfUs.Utilities;
 using TouMiraRolesExtension.GameOver;
+using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Roles.Neutral;
+using TouMiraRolesExtension.Utilities;
 using MiraAPI.Utilities;
 
 namespace TouMiraRolesExtension.Patches.WinConditions;
@@ -30,6 +32,17 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
 
     public bool IsMet(LogicGameFlowNormal gameFlow)
     {
+        // Only the host can decide game end.
+        if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
+        {
+            return false;
+        }
+
+        if (LawyerWinConditionState.Triggered)
+        {
+            return false;
+        }
+
         var alivePlayers = Helpers.GetAlivePlayers();
         if (alivePlayers.Count != 3)
         {
@@ -61,46 +74,89 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
         }
 
         // At least one alive Lawyer with an alive Client, and both must be among the 3 alive.
-        return PlayerControl.AllPlayerControls.ToArray()
-            .Where(p => p != null && !p.HasDied() && p.IsRole<LawyerRole>())
-            .Select(p => p.GetRole<LawyerRole>())
-            .Any(l => l != null &&
-                      l.Player != null && !l.Player.HasDied() &&
-                      l.Client != null && !l.Client.HasDied() &&
-                      IsKillerClient(l.Client) &&
-                      alivePlayers.Any(ap => ap.PlayerId == l.Player.PlayerId) &&
-                      alivePlayers.Any(ap => ap.PlayerId == l.Client.PlayerId));
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
+        {
+            if (lawyerPc == null || lawyerPc.HasDied() || !lawyerPc.IsRole<LawyerRole>())
+            {
+                continue;
+            }
+
+            var client = LawyerUtils.FindClientForLawyer(lawyerPc.PlayerId);
+            if (client == null || client.HasDied())
+            {
+                continue;
+            }
+
+            if (!IsKillerClient(client))
+            {
+                continue;
+            }
+
+            if (!alivePlayers.Any(ap => ap.PlayerId == lawyerPc.PlayerId) ||
+                !alivePlayers.Any(ap => ap.PlayerId == client.PlayerId))
+            {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public void TriggerGameOver(LogicGameFlowNormal gameFlow)
     {
-        var alivePlayers = Helpers.GetAlivePlayers();
-
-        // Collect all alive lawyers whose client is also alive (and both are among the 3 alive).
-        var winningLawyers = PlayerControl.AllPlayerControls.ToArray()
-            .Where(p => p != null && !p.HasDied() && p.IsRole<LawyerRole>())
-            .Select(p => p.GetRole<LawyerRole>())
-            .Where(l => l != null &&
-                        l.Player != null && !l.Player.HasDied() &&
-                        l.Client != null && !l.Client.HasDied() &&
-                        IsKillerClient(l.Client) &&
-                        l.Player.Data != null &&
-                        l.Client.Data != null &&
-                        alivePlayers.Any(ap => ap.PlayerId == l.Player.PlayerId) &&
-                        alivePlayers.Any(ap => ap.PlayerId == l.Client.PlayerId))
-            .ToList();
-
-        if (winningLawyers.Count == 0)
+        // Only the host can decide game end.
+        if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
         {
             return;
         }
 
-        var winners = new HashSet<NetworkedPlayerInfo>();
-        foreach (var lawyer in winningLawyers)
+        if (LawyerWinConditionState.Triggered)
         {
-            lawyer!.AboutToWin = true;
-            winners.Add(lawyer.Player!.Data);
-            winners.Add(lawyer.Client!.Data);
+            return;
+        }
+
+        var alivePlayers = Helpers.GetAlivePlayers();
+
+        var winners = new HashSet<NetworkedPlayerInfo>();
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
+        {
+            if (lawyerPc == null || lawyerPc.HasDied() || !lawyerPc.IsRole<LawyerRole>())
+            {
+                continue;
+            }
+
+            var client = LawyerUtils.FindClientForLawyer(lawyerPc.PlayerId);
+            if (client == null || client.HasDied())
+            {
+                continue;
+            }
+
+            if (!IsKillerClient(client))
+            {
+                continue;
+            }
+
+            if (lawyerPc.Data == null || client.Data == null)
+            {
+                continue;
+            }
+
+            if (!alivePlayers.Any(ap => ap.PlayerId == lawyerPc.PlayerId) ||
+                !alivePlayers.Any(ap => ap.PlayerId == client.PlayerId))
+            {
+                continue;
+            }
+
+            var lawyerRole = lawyerPc.GetRole<LawyerRole>();
+            if (lawyerRole != null)
+            {
+                lawyerRole.AboutToWin = true;
+            }
+
+            winners.Add(lawyerPc.Data);
+            winners.Add(client.Data);
         }
 
         if (winners.Count < 2)
@@ -108,6 +164,7 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
             return;
         }
 
+        LawyerWinConditionState.MarkTriggered();
         CustomGameOver.Trigger<LawyerGameOver>(winners.ToArray());
     }
 }

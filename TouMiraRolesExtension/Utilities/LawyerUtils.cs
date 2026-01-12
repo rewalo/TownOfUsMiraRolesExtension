@@ -11,6 +11,30 @@ namespace TouMiraRolesExtension.Utilities;
 public static class LawyerUtils
 {
     /// <summary>
+    /// Finds the client (defendant) for a given lawyer id by scanning for the replicated <see cref="LawyerTargetModifier"/>.
+    /// This is safer than relying on <see cref="LawyerRole.Client"/> which can be null/desynced on some clients.
+    /// </summary>
+    /// <param name="lawyerId">The lawyer's PlayerId</param>
+    /// <returns>The client player if found, null otherwise</returns>
+    public static PlayerControl? FindClientForLawyer(byte lawyerId)
+    {
+        foreach (var pc in PlayerControl.AllPlayerControls.ToArray())
+        {
+            if (pc == null)
+            {
+                continue;
+            }
+
+            if (pc.HasModifier<LawyerTargetModifier>(m => m.OwnerId == lawyerId))
+            {
+                return pc;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Gets the lawyer for a specific client player.
     /// </summary>
     /// <param name="client">The client player</param>
@@ -75,7 +99,7 @@ public static class LawyerUtils
         }
 
         var lawyerRole = lawyer.GetRole<LawyerRole>();
-        return lawyerRole?.Client;
+        return lawyerRole?.Client ?? FindClientForLawyer(lawyer.PlayerId);
     }
 
     /// <summary>

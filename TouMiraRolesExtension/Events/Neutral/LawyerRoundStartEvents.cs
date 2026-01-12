@@ -12,6 +12,7 @@ public static class LawyerRoundStartEvents
         if (@event.TriggeredByIntro)
         {
             LawyerDuoTracker.ClearAll();
+            LawyerWinConditionState.Reset();
         }
     }
 }
