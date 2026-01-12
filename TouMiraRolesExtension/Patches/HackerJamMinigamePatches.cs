@@ -426,6 +426,66 @@ public static class HackerJamMinigamePatches
         return false;
     }
 
+    private static void ApplyDoorLogJammed(SecurityLogGame doorLog)
+    {
+        if (doorLog == null)
+        {
+            return;
+        }
+
+        try
+        {
+            doorLog.SabText?.gameObject.SetActive(true);
+        }
+        catch
+        {
+            // ignore
+        }
+
+        try
+        {
+            var type = doorLog.GetType();
+            var logContainerFields = new[]
+            {
+                "LogArea", "LogContainer", "Content", "Entries", "LogEntries", "ScrollArea",
+                "logArea", "logContainer", "content", "entries", "logEntries", "scrollArea"
+            };
+
+            foreach (var fieldName in logContainerFields)
+            {
+                try
+                {
+                    var field = AccessTools.Field(type, fieldName);
+                    if (field == null)
+                    {
+                        continue;
+                    }
+
+                    var value = field.GetValue(doorLog);
+                    TrySetActive(value, false);
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    [HarmonyPatch(typeof(SecurityLogGame), nameof(SecurityLogGame.Begin))]
+    [HarmonyPostfix]
+    public static void SecurityLogGameBeginPostfix(SecurityLogGame __instance)
+    {
+        if (__instance != null && HackerSystem.IsJammed)
+        {
+            ApplyDoorLogJammed(__instance);
+        }
+    }
+
     [HarmonyPatch(typeof(SecurityLogGame), nameof(SecurityLogGame.Update))]
     [HarmonyPrefix]
     public static bool SecurityLogGameUpdatePrefix(SecurityLogGame __instance)
@@ -440,14 +500,7 @@ public static class HackerJamMinigamePatches
             return true;
         }
 
-        try
-        {
-            __instance.SabText?.gameObject.SetActive(true);
-        }
-        catch
-        {
-            // ignore
-        }
+        ApplyDoorLogJammed(__instance);
 
         return false;
     }

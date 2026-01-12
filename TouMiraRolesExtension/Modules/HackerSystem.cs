@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
+using Il2CppInterop.Runtime;
 using InnerNet;
 using TownOfUs.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Resources = UnityEngine.Resources;
 
 namespace TouMiraRolesExtension.Modules;
 
@@ -266,6 +268,28 @@ public static class HackerSystem
     private static bool TryGetDoorLogDistance(Vector2 from, float range, out float dist)
     {
         dist = float.MaxValue;
+        
+        // Special handling for Mira HQ: use hardcoded position
+        var mapId = (ExpandedMapNames)GameOptionsManager.Instance.currentNormalGameOptions.MapId;
+        if (TutorialManager.InstanceExists)
+        {
+            mapId = (ExpandedMapNames)AmongUsClient.Instance.TutorialMapId;
+        }
+        
+        if (mapId is ExpandedMapNames.MiraHq)
+        {
+            // Mira HQ doorlog position
+            var miraDoorLogPos = new Vector2(15.9f, 4.8f);
+            var d = Vector2.Distance(from, miraDoorLogPos);
+            if (d <= range)
+            {
+                dist = d;
+                return true;
+            }
+            return false;
+        }
+        
+        // For other maps, try to find the console
         var sc = FindDoorLogConsole();
         if (sc == null)
         {
@@ -273,10 +297,10 @@ public static class HackerSystem
         }
 
         var p = (Vector2)sc.transform.position;
-        var d = Vector2.Distance(from, p);
-        if (d <= range)
+        var d2 = Vector2.Distance(from, p);
+        if (d2 <= range)
         {
-            dist = d;
+            dist = d2;
             return true;
         }
 
@@ -291,7 +315,7 @@ public static class HackerSystem
             mapId = (ExpandedMapNames)AmongUsClient.Instance.TutorialMapId;
         }
 
-        var consoles = Object.FindObjectsOfType<SystemConsole>();
+        var consoles = FindAllSystemConsoles();
         if (consoles == null || consoles.Length == 0)
         {
             return null;
@@ -309,7 +333,8 @@ public static class HackerSystem
 
         if (mapId is ExpandedMapNames.MiraHq)
         {
-            return consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("SurvLogConsole"));
+            return consoles.FirstOrDefault(IsDoorLogConsole) ??
+                   consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("SurvLogConsole"));
         }
 
         if (mapId is ExpandedMapNames.Submerged)
@@ -324,16 +349,80 @@ public static class HackerSystem
 
     public static SystemConsole? FindDoorLogConsole()
     {
-        var consoles = Object.FindObjectsOfType<SystemConsole>();
+        var consoles = FindAllSystemConsoles();
         if (consoles == null || consoles.Length == 0)
         {
             return null;
         }
 
-        return consoles.FirstOrDefault(x =>
+        return consoles.FirstOrDefault(IsDoorLogConsole) ??
+               consoles.FirstOrDefault(x =>
                    x != null &&
                    (x.gameObject.name.Contains("DoorLog", System.StringComparison.OrdinalIgnoreCase) ||
-                    x.gameObject.name.Contains("SurvLogConsole", System.StringComparison.OrdinalIgnoreCase))) ??
-               consoles.FirstOrDefault(x => x != null && x.name.Contains("DoorLog", System.StringComparison.OrdinalIgnoreCase));
+                    x.gameObject.name.Contains("SurvLogConsole", System.StringComparison.OrdinalIgnoreCase) ||
+                    x.gameObject.name.Contains("SurvLog", System.StringComparison.OrdinalIgnoreCase) ||
+                    x.name.Contains("DoorLog", System.StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private static bool IsDoorLogConsole(SystemConsole? console)
+    {
+        if (console == null || console.MinigamePrefab == null)
+        {
+            return false;
+        }
+
+        if (console.MinigamePrefab.TryCast<SecurityLogGame>() != null)
+        {
+            return true;
+        }
+
+        return console.gameObject.name.Contains("SurvLogConsole", System.StringComparison.OrdinalIgnoreCase) ||
+               console.gameObject.name.Contains("DoorLog", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static SystemConsole[] FindAllSystemConsoles()
+    {
+        var consoles = Object.FindObjectsOfType<SystemConsole>();
+        if (consoles != null && consoles.Length > 0)
+        {
+            return consoles;
+        }
+
+        try
+        {
+            var allObjects = Resources.FindObjectsOfTypeAll(Il2CppType.From(typeof(SystemConsole)));
+            if (allObjects == null)
+            {
+                return System.Array.Empty<SystemConsole>();
+            }
+
+            var result = new List<SystemConsole>();
+            foreach (var obj in allObjects)
+            {
+                if (obj == null)
+                {
+                    continue;
+                }
+
+                var sc = obj.TryCast<SystemConsole>();
+                if (sc == null || sc.gameObject == null)
+                {
+                    continue;
+                }
+
+                if (!sc.gameObject.scene.isLoaded)
+                {
+                    continue;
+                }
+
+                result.Add(sc);
+            }
+
+            return result.ToArray();
+        }
+        catch
+        {
+            return System.Array.Empty<SystemConsole>();
+        }
     }
 }
