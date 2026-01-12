@@ -3,6 +3,7 @@ using HarmonyLib;
 using System.Reflection;
 using TouMiraRolesExtension.Modules;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TouMiraRolesExtension.Patches;
 
@@ -435,7 +436,10 @@ public static class HackerJamMinigamePatches
 
         try
         {
-            doorLog.SabText?.gameObject.SetActive(true);
+            if (doorLog.SabText != null)
+            {
+                doorLog.SabText.gameObject.SetActive(true);
+            }
         }
         catch
         {
@@ -444,45 +448,77 @@ public static class HackerJamMinigamePatches
 
         try
         {
-            var type = doorLog.GetType();
-            var logContainerFields = new[]
+            var allChildren = doorLog.transform.GetComponentsInChildren<Transform>(true);
+            if (allChildren != null)
             {
-                "LogArea", "LogContainer", "Content", "Entries", "LogEntries", "ScrollArea",
-                "logArea", "logContainer", "content", "entries", "logEntries", "scrollArea"
-            };
-
-            foreach (var fieldName in logContainerFields)
-            {
+                Transform? sabTextTransform = null;
                 try
                 {
-                    var field = AccessTools.Field(type, fieldName);
-                    if (field == null)
+                    if (doorLog.SabText != null)
                     {
-                        continue;
+                        sabTextTransform = doorLog.SabText.transform;
                     }
-
-                    var value = field.GetValue(doorLog);
-                    TrySetActive(value, false);
                 }
                 catch
                 {
                     // ignore
+                }
+
+                Transform? logContainer = null;
+                foreach (var child in allChildren)
+                {
+                    if (child == null || child == doorLog.transform)
+                    {
+                        continue;
+                    }
+
+                    var scrollRect = child.GetComponent<ScrollRect>();
+                    if (scrollRect != null && scrollRect.content != null)
+                    {
+                        logContainer = scrollRect.content;
+                        break;
+                    }
+
+                    var name = child.name.ToLowerInvariant();
+                    if (name.Contains("content") || name.Contains("viewport") || 
+                        (name.Contains("scroll") && name.Contains("view")))
+                    {
+                        logContainer = child;
+                        break;
+                    }
+                }
+
+                if (logContainer != null)
+                {
+                    foreach (Transform entry in logContainer)
+                    {
+                        if (entry != null && entry != logContainer && entry != sabTextTransform)
+                        {
+                            entry.gameObject.SetActive(false);
+                        }
+                    }
+                }
+
+                foreach (var child in allChildren)
+                {
+                    if (child == null || child == doorLog.transform || child == sabTextTransform)
+                    {
+                        continue;
+                    }
+
+                    var name = child.name.ToLowerInvariant();
+
+                    if (name.Contains("log") && (name.Contains("entry") || name.Contains("item") || name.Contains("row")))
+                    {
+                        child.gameObject.SetActive(false);
+                        continue;
+                    }
                 }
             }
         }
         catch
         {
             // ignore
-        }
-    }
-
-    [HarmonyPatch(typeof(SecurityLogGame), nameof(SecurityLogGame.Begin))]
-    [HarmonyPostfix]
-    public static void SecurityLogGameBeginPostfix(SecurityLogGame __instance)
-    {
-        if (__instance != null && HackerSystem.IsJammed)
-        {
-            ApplyDoorLogJammed(__instance);
         }
     }
 
@@ -495,14 +531,13 @@ public static class HackerJamMinigamePatches
             return true;
         }
 
-        if (!HackerSystem.IsJammed)
+        if (HackerSystem.IsJammed)
         {
-            return true;
+            ApplyDoorLogJammed(__instance);
+            return false;
         }
 
-        ApplyDoorLogJammed(__instance);
-
-        return false;
+        return true;
     }
 
     [HarmonyPatch(typeof(VitalsMinigame), nameof(VitalsMinigame.Update))]
