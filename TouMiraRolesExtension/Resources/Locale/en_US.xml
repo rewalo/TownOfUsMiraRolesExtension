@@ -151,6 +151,28 @@
   <string name="ExtensionOptionWraithLanternDuration">Lantern Duration</string>
   <string name="ExtensionOptionWraithInvisibleDuration">Invisible Duration</string>
 
+  <!-- Hacker Role -->
+  <string name="ExtensionRoleHacker">Hacker</string>
+  <string name="ExtensionRoleHackerIntroBlurb">Download system information and jam comms.</string>
+  <string name="ExtensionRoleHackerTabDescription">Download and jam equipment, kill for extra jam charges.</string>
+  <string name="ExtensionRoleHackerWikiDescription">The Hacker is an Impostor Support role that can download information from nearby equipment to charge a portable device. Once you start downloading, you're locked into that equipment type until the next round. Jam disrupts information systems as if comms were sabotaged, but emergency meetings can still be called.</string>
+  <string name="ExtensionRoleHackerDownload">Download</string>
+  <string name="ExtensionRoleHackerDownloadWikiDescription">While near a downloadable console (Admin/Cams/Vitals/Door Log), download to charge your battery. Every 1 second downloading grants 2 seconds of device battery (configurable). You cannot switch equipment type until the next round.</string>
+  <string name="ExtensionRoleHackerDevice">Device</string>
+  <string name="ExtensionRoleHackerDeviceWikiDescription">Use the downloaded system anywhere, consuming battery over time.</string>
+  <string name="ExtensionRoleHackerJam">Jam</string>
+  <string name="ExtensionRoleHackerJamWikiDescription">Spend a Jam charge to disrupt information systems for a duration. This behaves like comms being down, but does not prevent calling emergency meetings.</string>
+
+  <!-- Hacker Options -->
+  <string name="ExtensionOptionHackerMaxBatterySeconds">Maximum Battery Duration</string>
+  <string name="ExtensionOptionHackerBatteryPerDownloadSecond">Battery Gained Per Download Second</string>
+  <string name="ExtensionOptionHackerDownloadRange">Download Range</string>
+  <string name="ExtensionOptionHackerMoveWithDevice">Move While Using Device</string>
+  <string name="ExtensionOptionHackerJamChargesPerKill">Jam Charges Per Kill</string>
+  <string name="ExtensionOptionHackerJamMaxCharges">Max Jam Charges</string>
+  <string name="ExtensionOptionHackerJamCooldown">Jam Cooldown</string>
+  <string name="ExtensionOptionHackerJamDuration">Jam Duration</string>
+
   <!-- Forestaller Role -->
   <string name="ExtensionRoleForestaller">Forestaller</string>
   <string name="ExtensionRoleForestallerIntroBlurb">Complete all tasks to disable sabotages.</string>
