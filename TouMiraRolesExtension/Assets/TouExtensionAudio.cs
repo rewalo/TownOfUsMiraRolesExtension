@@ -13,4 +13,5 @@ public static class TouExtensionAudio
     public static LoadableAsset<AudioClip> LanternBreakSound { get; } = new LoadableAudioResourceAsset($"{AudioPath}.lantern_break.wav");
     public static LoadableAsset<AudioClip> DecoyPlaceSound { get; } = new LoadableAudioResourceAsset($"{AudioPath}.decoy_place.wav");
     public static LoadableAsset<AudioClip> DecoyDestroySound { get; } = new LoadableAudioResourceAsset($"{AudioPath}.decoy_destroy.wav");
+    public static LoadableAsset<AudioClip> HackerJamSound { get; } = new LoadableAudioResourceAsset($"{AudioPath}.hacker_jam.wav");
 }
