@@ -12,7 +12,8 @@ This extension mod:
 5. **Adds** the **Lawyer** role (neutral role that protects a client)
 6. **Adds** the **Witch** role (impostor power role that curses players)
 7. **Adds** the **Serial Killer** role (neutral killing role)
-8. **Adds** the **Clueless** modifier
+8. **Adds** the **Mirage** role (crewmate support role that places decoys)
+9. **Adds** the **Clueless** modifier
 
 ### Roles
 - **Revealer** (Crewmate, renamed from Trapper): Place traps around the map to reveal roles of players who stay in them long enough.
@@ -22,6 +23,7 @@ This extension mod:
 - **Lawyer** (Neutral Benign): Win by keeping your assigned client from being voted out. If your client gets voted out, you lose. Can object to votes during meetings to make players reconsider their votes.
 - **Witch** (Impostor Power): Cast spells on players to curse them. Spellbound players are highlighted in the next meeting and die after a configured amount of meetings. If the Witch dies, gets exiled, or is guessed, all spellbound players survive.
 - **Serial Killer** (Neutral Killing): Kill everyone to win alone. Can optionally kill players who are in vents with them, but loses the ability to vent for the rest of the game after doing so.
+- **Mirage** (Crewmate Support): Place a decoy with the appearance of a chosen target (yourself or a random player). If any player interacts with the decoy, it disappears instantly and both the Mirage and the toucher receive a notification. Cannot be guessed if the decoy has the appearance of yourself.
 
 ### Modifiers
 - **Clueless** (Universal): Removes all task guidance (task list, task arrows/markers, and map task locations). Tasks still function normally and contribute to the task bar.
