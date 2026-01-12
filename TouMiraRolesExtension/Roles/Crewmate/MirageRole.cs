@@ -82,6 +82,7 @@ public sealed class MirageRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsR
         PlayerControl appearanceSource,
         Vector2 pos,
         float z,
+        float durationSeconds,
         float zRot,
         bool flipX)
     {
@@ -95,10 +96,8 @@ public sealed class MirageRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsR
             TouAudio.PlaySound(TouExtensionAudio.DecoyPlaceSound);
         }
 
-        var opts = OptionGroupSingleton<MirageOptions>.Instance;
-        var duration = opts.DecoyDuration;
         var worldPos = new Vector3(pos.x, pos.y, z);
-        MirageDecoySystem.RevealOrSpawnDecoy(mirage.PlayerId, appearanceSource, worldPos, zRot, flipX, duration);
+        MirageDecoySystem.RevealOrSpawnDecoy(mirage.PlayerId, appearanceSource, worldPos, zRot, flipX, durationSeconds);
     }
 
     [MethodRpc((uint)ExtensionRpc.MiragePrimeDecoy)]

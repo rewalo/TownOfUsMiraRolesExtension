@@ -13,6 +13,10 @@ using TownOfUs;
 using TownOfUs.Patches;
 using TouMiraRolesExtension.Patches;
 using TouMiraRolesExtension.Patches.WinConditions;
+using System.Reflection;
+using System.Linq;
+using System.Collections.Generic;
+using TouMiraRolesExtension.Utilities;
 
 namespace TouMiraRolesExtension;
 
@@ -50,8 +54,64 @@ public partial class TouMiraRolesExtensionPlugin : BasePlugin, IMiraPlugin
         ReactorCredits.Register("Tou Mira Roles Extension", Version, IsDevBuild, ReactorCredits.AlwaysShow);
         IL2CPPChainloader.Instance.Finished += Modules.ExtensionLocale.SearchInternalLocale; // Initialise AFTER the mods are loaded to ensure maximum parity (no need for the soft dependency either then)
         IL2CPPChainloader.Instance.Finished += LawyerTeamChatRegistration.Register; // Register lawyer team chat after mods are loaded
-        Harmony.PatchAll();
+        PatchAllWithErrorHandling();
+        
         WinConditionRegistry.Register(new LawyerDuoWinCondition());
         WinConditionRegistry.Register(new LawyerParityWinCondition());
+    }
+
+    private void PatchAllWithErrorHandling()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var patchTypes = SafeReflection.GetTypesSafe(assembly)
+            .Where(t => t.GetCustomAttributes(typeof(HarmonyPatch), true).Length > 0)
+            .ToList();
+
+        int successCount = 0;
+        int failCount = 0;
+        List<string> failedTypes = new();
+
+        foreach (var type in patchTypes)
+        {
+            try
+            {
+                Harmony.PatchAll(type);
+                successCount++;
+            }
+            catch (System.Exception ex)
+            {
+                failCount++;
+                failedTypes.Add(type.FullName ?? type.Name);
+                Error($"Failed to patch class: {type.FullName}");
+                Error($"Error type: {ex.GetType().FullName}");
+                Error($"Error message: {ex.Message}");
+                
+                if (ex.InnerException != null)
+                {
+                    Error($"Inner exception: {ex.InnerException.GetType().FullName}: {ex.InnerException.Message}");
+                }
+
+                Debug($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        Info($"Harmony patching completed: {successCount} classes patched successfully, {failCount} classes had errors");
+        
+        if (failCount > 0)
+        {
+            Warning($"Failed to patch the following classes: {string.Join(", ", failedTypes)}");
+            Warning("The mod may function partially. If you experience issues, please report which patch classes failed.");
+            Warning("This error may be due to:");
+            Warning("  - Environment-specific issues (corrupted .NET runtime, incompatible game version)");
+            Warning("  - Missing dependencies or incompatible mod versions");
+            Warning("  - Methods that cannot be patched due to JIT compilation issues");
+        }
+        
+        if (successCount == 0 && failCount > 0)
+        {
+            Error("All Harmony patches failed! The mod cannot function without patches.");
+            Error("Please check your .NET runtime installation and game version compatibility.");
+            throw new System.InvalidOperationException($"Failed to apply any Harmony patches. {failCount} patch classes failed. See log for details.");
+        }
     }
 }

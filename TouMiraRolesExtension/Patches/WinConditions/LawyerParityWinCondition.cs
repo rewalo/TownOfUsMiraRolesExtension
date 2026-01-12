@@ -7,6 +7,8 @@ using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
 using MiraAPI.Utilities;
+using MiraAPI.GameOptions;
+using TouMiraRolesExtension.Options.Roles.Neutral;
 
 namespace TouMiraRolesExtension.Patches.WinConditions;
 
@@ -34,6 +36,12 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
     {
         // Only the host can decide game end.
         if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
+        {
+            return false;
+        }
+
+        // Only force LawyerGameOver when Lawyer is configured to steal/override the win.
+        if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
         {
             return false;
         }
@@ -108,6 +116,12 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
     {
         // Only the host can decide game end.
         if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
+        {
+            return;
+        }
+
+        // Only force LawyerGameOver when Lawyer is configured to steal/override the win.
+        if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
         {
             return;
         }

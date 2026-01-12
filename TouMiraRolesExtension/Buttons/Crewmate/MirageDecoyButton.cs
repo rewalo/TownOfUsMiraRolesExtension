@@ -1,6 +1,5 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Keybinds;
-using MiraAPI.Modifiers;
 using MiraAPI.Utilities.Assets;
 using Reactor.Utilities;
 using Reactor.Utilities.Extensions;
@@ -9,8 +8,6 @@ using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Options.Roles.Crewmate;
 using TouMiraRolesExtension.Roles.Crewmate;
 using TownOfUs.Buttons;
-using TownOfUs.Extensions;
-using TownOfUs.Modifiers.Game.Universal;
 using TownOfUs.Modules.Localization;
 using TownOfUs.Modules;
 using TownOfUs.Utilities;
@@ -147,6 +144,28 @@ public sealed class MirageDecoyButton : TownOfUsRoleButton<MirageRole>
                 break;
         }
 
+        if (_stage == Stage.Destroy &&
+            hasVisible &&
+            EffectDuration <= 0f &&
+            Button != null)
+        {
+            var lockRemaining = _destroyUnlockAt - Time.time;
+            if (lockRemaining > 0f)
+            {
+                try
+                {
+                    Button.SetFillUp(lockRemaining, PostPlaceLockSeconds);
+                    Button.cooldownTimerText.text = Mathf.Ceil(lockRemaining)
+                        .ToString(CooldownTimerFormatString, System.Globalization.NumberFormatInfo.InvariantInfo);
+                    Button.cooldownTimerText.gameObject.SetActive(true);
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+        }
+
         if (MeetingHud.Instance)
         {
             // no-op
@@ -193,6 +212,7 @@ public sealed class MirageDecoyButton : TownOfUsRoleButton<MirageRole>
             appearance,
             new Vector2(_primedWorldPos.x, _primedWorldPos.y),
             _primedWorldPos.z,
+            OptionGroupSingleton<MirageOptions>.Instance.DecoyDuration,
             0f,
             false);
         _stage = Stage.Destroy;
@@ -259,5 +279,3 @@ public sealed class MirageDecoyButton : TownOfUsRoleButton<MirageRole>
         }
     }
 }
-
-

@@ -58,6 +58,9 @@
   <string name="ExtensionRoleLawyerObjectWikiDescription">During meetings, click the objection button on your client's vote area to object to all votes, clearing them and forcing players to vote again.</string>
   
   <!-- Lawyer Options -->
+  <string name="ExtensionOptionLawyerWinMode">Lawyer Win Mode</string>
+  <string name="ExtensionOptionLawyerWinModeEnumWithClient">Win With Client</string>
+  <string name="ExtensionOptionLawyerWinModeEnumStealWin">Steal Win</string>
   <string name="ExtensionOptionLawyerDieOnClientDeath">Lawyer Dies When Client Dies</string>
   <string name="ExtensionOptionLawyerBecomesClientDeath">On Client Death, Lawyer Becomes</string>
   <string name="ExtensionOptionLawyerGetVotedOutWithClient">Lawyer Gets Voted Out With Client</string>
