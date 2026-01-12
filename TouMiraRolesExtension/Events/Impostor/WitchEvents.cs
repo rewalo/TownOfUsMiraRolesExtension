@@ -1,5 +1,6 @@
 using System.Collections;
 using BepInEx.Logging;
+using InnerNet;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -86,21 +87,8 @@ public static class WitchEvents
             return;
         }
 
-        if (exiled.IsRole<WitchRole>())
-        {
-            foreach (var player in PlayerControl.AllPlayerControls.ToArray())
-            {
-                if (player == null || !player.HasModifier<WitchSpellboundModifier>())
-                {
-                    continue;
-                }
-
-                player.RemoveModifier<WitchSpellboundModifier>();
-            }
-
-            PendingSpellDeaths.Clear();
-            return;
-        }
+        // If the witch is exiled, do NOT clear spellbound immediately (it would confirm the witch mid-meeting).
+        // We defer all processing/cleanup until after MeetingHud is gone inside CoProcessSpellDeaths().
 
         Logger.LogWarning($"[Witch] EjectionEventHandler: Starting spell death processing. Meeting count: {_meetingCount}");
         _processingDeaths = true;
@@ -109,139 +97,147 @@ public static class WitchEvents
 
     private static IEnumerator CoProcessSpellDeaths()
     {
-        Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Starting coroutine. Meeting count: {_meetingCount}");
-
-        while (MeetingHud.Instance != null)
+        try
         {
-            yield return new WaitForSeconds(0.05f);
-        }
+            Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Starting coroutine. Meeting count: {_meetingCount}");
 
-        yield return new WaitForSeconds(0.1f);
-
-        Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Meeting ended, checking witch status");
-
-        var witchAlive = false;
-
-        foreach (var player in PlayerControl.AllPlayerControls.ToArray())
-        {
-            if (player == null || !player.IsRole<WitchRole>())
+            while (MeetingHud.Instance != null)
             {
-                continue;
+                yield return new WaitForSeconds(0.05f);
             }
 
-            if (!player.HasDied())
+            yield return new WaitForSeconds(0.1f);
+
+            // Only the host should decide deaths / clears; results are propagated via RPC.
+            if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
             {
-                witchAlive = true;
+                yield break;
             }
-        }
 
-        Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Witch alive: {witchAlive}");
+            Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Meeting ended, checking witch status");
 
-        if (!witchAlive)
-        {
-            Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Witch is dead, removing all spellbound modifiers");
+            var witchAlive = false;
+
             foreach (var player in PlayerControl.AllPlayerControls.ToArray())
             {
-                if (player == null || !player.HasModifier<WitchSpellboundModifier>())
+                if (player == null || !player.IsRole<WitchRole>())
                 {
                     continue;
                 }
 
-                player.RemoveModifier<WitchSpellboundModifier>();
-            }
-
-            PendingSpellDeaths.Clear();
-            yield break;
-        }
-
-        var options = OptionGroupSingleton<WitchOptions>.Instance;
-        var meetingsUntilDeath = options.MeetingsUntilDeath;
-        Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Meetings until death: {meetingsUntilDeath}, Current meeting count: {_meetingCount}");
-
-        
-        var spellboundPlayers = PlayerControl.AllPlayerControls.ToArray()
-            .Where(p => p != null && p.HasModifier<WitchSpellboundModifier>())
-            .ToList();
-        
-        Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Found {spellboundPlayers.Count} spellbound players");
-
-        foreach (var player in spellboundPlayers)
-        {
-            if (player == null || player.HasDied())
-            {
-                Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Skipping {player?.Data?.PlayerName ?? "null"} - already dead or null");
-                continue;
-            }
-
-            var modifier = player.GetModifier<WitchSpellboundModifier>();
-            if (modifier == null)
-            {
-                Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Skipping {player.Data.PlayerName} - no modifier found");
-                continue;
-            }
-
-            var meetingsSinceSpell = _meetingCount - modifier.SpellCastMeeting;
-            var meetingsSinceSpellFloat = (float)meetingsSinceSpell;
-            Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} - SpellCastMeeting: {modifier.SpellCastMeeting}, CurrentMeetingCount: {_meetingCount}, MeetingsSinceSpell: {meetingsSinceSpellFloat}, MeetingsUntilDeath: {meetingsUntilDeath}");
-            
-            if (meetingsSinceSpellFloat >= meetingsUntilDeath)
-            {
-                Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} should die! ({meetingsSinceSpellFloat} >= {meetingsUntilDeath})");
-            }
-            else
-            {
-                Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} not dying yet ({meetingsSinceSpellFloat} < {meetingsUntilDeath})");
-                continue;
-            }
-
-            var shouldDie = true;
-
-            if (player.HasModifier<GuardianAngelProtectModifier>())
-            {
-                Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} is protected by shield");
-                shouldDie = false;
-            }
-
-            if (shouldDie)
-            {
-                var witch = PlayerControl.AllPlayerControls.ToArray()
-                    .FirstOrDefault(p => p != null && p.IsRole<WitchRole>());
-
-                Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Attempting to kill {player.Data.PlayerName}, witch found: {witch != null}");
-                
-                if (witch != null)
+                if (!player.HasDied())
                 {
-                    Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Calling RpcSpecialMurder on {player.Data.PlayerName}");
-                    witch.RpcSpecialMurder(
-                        player,
-                        isIndirect: true,
-                        ignoreShield: false,
-                        didSucceed: true,
-                        resetKillTimer: true,
-                        createDeadBody: false,
-                        teleportMurderer: false,
-                        showKillAnim: true,
-                        playKillSound: false,
-                        causeOfDeath: "Witch");
+                    witchAlive = true;
+                }
+            }
+
+            Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Witch alive: {witchAlive}");
+
+            if (!witchAlive)
+            {
+                Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Witch is dead, clearing all spellbound modifiers");
+                WitchRole.RpcWitchClearAllSpellbound(PlayerControl.LocalPlayer);
+                PendingSpellDeaths.Clear();
+                yield break;
+            }
+
+            var options = OptionGroupSingleton<WitchOptions>.Instance;
+            var meetingsUntilDeath = options.MeetingsUntilDeath;
+            Logger.LogWarning(
+                $"[Witch] CoProcessSpellDeaths: Meetings until death: {meetingsUntilDeath}, Current meeting count: {_meetingCount}");
+
+            var spellboundPlayers = PlayerControl.AllPlayerControls.ToArray()
+                .Where(p => p != null && p.HasModifier<WitchSpellboundModifier>())
+                .ToList();
+
+            Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Found {spellboundPlayers.Count} spellbound players");
+
+            foreach (var player in spellboundPlayers)
+            {
+                if (player == null || player.HasDied())
+                {
+                    Logger.LogWarning(
+                        $"[Witch] CoProcessSpellDeaths: Skipping {player?.Data?.PlayerName ?? "null"} - already dead or null");
+                    continue;
+                }
+
+                var modifier = player.GetModifier<WitchSpellboundModifier>();
+                if (modifier == null)
+                {
+                    Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Skipping {player.Data.PlayerName} - no modifier found");
+                    continue;
+                }
+
+                var meetingsSinceSpell = _meetingCount - modifier.SpellCastMeeting;
+                var meetingsSinceSpellFloat = (float)meetingsSinceSpell;
+                Logger.LogWarning(
+                    $"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} - SpellCastMeeting: {modifier.SpellCastMeeting}, CurrentMeetingCount: {_meetingCount}, MeetingsSinceSpell: {meetingsSinceSpellFloat}, MeetingsUntilDeath: {meetingsUntilDeath}");
+
+                if (meetingsSinceSpellFloat >= meetingsUntilDeath)
+                {
+                    Logger.LogWarning(
+                        $"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} should die! ({meetingsSinceSpellFloat} >= {meetingsUntilDeath})");
                 }
                 else
                 {
-                    Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Witch not found, using fallback RpcMurderPlayer");
-                    player.RpcMurderPlayer(player, true);
+                    Logger.LogWarning(
+                        $"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} not dying yet ({meetingsSinceSpellFloat} < {meetingsUntilDeath})");
+                    continue;
                 }
 
-                player.RemoveModifier<WitchSpellboundModifier>();
-                Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Removed modifier from {player.Data.PlayerName}");
-            }
-            else
-            {
-                Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} survived due to shield");
-                player.RemoveModifier<WitchSpellboundModifier>();
-            }
-        }
+                var shouldDie = true;
 
-        PendingSpellDeaths.Clear();
-        _processingDeaths = false;
+                if (player.HasModifier<GuardianAngelProtectModifier>())
+                {
+                    Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} is protected by shield");
+                    shouldDie = false;
+                }
+
+                if (shouldDie)
+                {
+                    var witch = PlayerControl.AllPlayerControls.ToArray()
+                        .FirstOrDefault(p => p != null && p.IsRole<WitchRole>());
+
+                    Logger.LogWarning(
+                        $"[Witch] CoProcessSpellDeaths: Attempting to kill {player.Data.PlayerName}, witch found: {witch != null}");
+
+                    if (witch != null)
+                    {
+                        Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Calling RpcSpecialMurder on {player.Data.PlayerName}");
+                        witch.RpcSpecialMurder(
+                            player,
+                            isIndirect: true,
+                            ignoreShield: false,
+                            didSucceed: true,
+                            resetKillTimer: true,
+                            createDeadBody: false,
+                            teleportMurderer: false,
+                            showKillAnim: true,
+                            playKillSound: false,
+                            causeOfDeath: "Witch");
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Witch not found, using fallback RpcMurderPlayer");
+                        player.RpcMurderPlayer(player, true);
+                    }
+
+                    WitchRole.RpcWitchClearSpellboundPlayer(PlayerControl.LocalPlayer, player.PlayerId);
+                    Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Cleared modifier from {player.Data.PlayerName}");
+                }
+                else
+                {
+                    Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Player {player.Data.PlayerName} survived due to shield");
+                    WitchRole.RpcWitchClearSpellboundPlayer(PlayerControl.LocalPlayer, player.PlayerId);
+                }
+            }
+
+            PendingSpellDeaths.Clear();
+        }
+        finally
+        {
+            _processingDeaths = false;
+        }
     }
 
     [RegisterEvent]
@@ -256,17 +252,23 @@ public static class WitchEvents
         
         if (victim.IsRole<WitchRole>())
         {
-            foreach (var player in PlayerControl.AllPlayerControls.ToArray())
+            // If the witch dies during a meeting, defer cleanup until after the meeting to avoid confirming the witch.
+            if (MeetingHud.Instance != null)
             {
-                if (player == null || !player.HasModifier<WitchSpellboundModifier>())
+                if (!_processingDeaths)
                 {
-                    continue;
+                    _processingDeaths = true;
+                    Coroutines.Start(CoProcessSpellDeaths());
                 }
 
-                player.RemoveModifier<WitchSpellboundModifier>();
+                return;
             }
 
-            PendingSpellDeaths.Clear();
+            if (AmongUsClient.Instance != null && AmongUsClient.Instance.AmHost)
+            {
+                WitchRole.RpcWitchClearAllSpellbound(PlayerControl.LocalPlayer);
+                PendingSpellDeaths.Clear();
+            }
         }
     }
 

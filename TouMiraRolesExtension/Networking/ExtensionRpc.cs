@@ -14,12 +14,10 @@ public enum ExtensionRpc : uint
     WraithPlaceLantern,
     WraithReturnLantern,
     WraithBreakLantern,
-
     MiragePlaceDecoy,
     MirageDestroyDecoy,
     MirageTriggerDecoy,
-
-    // Added for Mirage decoy refactor:
-    // Prime spawns the decoy once (hidden), Place reveals the existing instance.
-    MiragePrimeDecoy
+    MiragePrimeDecoy,
+    WitchClearAllSpellbound,
+    WitchClearSpellboundPlayer
 }

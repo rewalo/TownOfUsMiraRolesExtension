@@ -239,4 +239,33 @@ public sealed class WitchRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsRo
     {
         MiscUtils.AddFakeChat(PlayerControl.LocalPlayer.Data, title, message, false, true);
     }
+
+    [MethodRpc((uint)ExtensionRpc.WitchClearAllSpellbound)]
+    public static void RpcWitchClearAllSpellbound(PlayerControl sender)
+    {
+        foreach (var player in PlayerControl.AllPlayerControls.ToArray())
+        {
+            if (player == null || !player.HasModifier<WitchSpellboundModifier>())
+            {
+                continue;
+            }
+
+            player.RemoveModifier<WitchSpellboundModifier>();
+        }
+    }
+
+    [MethodRpc((uint)ExtensionRpc.WitchClearSpellboundPlayer)]
+    public static void RpcWitchClearSpellboundPlayer(PlayerControl sender, byte targetId)
+    {
+        var player = MiscUtils.PlayerById(targetId);
+        if (player == null)
+        {
+            return;
+        }
+
+        if (player.HasModifier<WitchSpellboundModifier>())
+        {
+            player.RemoveModifier<WitchSpellboundModifier>();
+        }
+    }
 }
