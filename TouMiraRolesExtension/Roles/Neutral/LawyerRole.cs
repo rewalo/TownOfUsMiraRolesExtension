@@ -673,13 +673,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
     public override bool CanUse(IUsable usable)
     {
-        if (!GameManager.Instance.LogicUsables.CanUse(usable, Player))
-        {
-            return false;
-        }
-
-        var console = usable.TryCast<Console>()!;
-        return console == null || console.AllowImpostor;
+        return GameManager.Instance.LogicUsables.CanUse(usable, Player);
     }
 
     public override bool DidWin(GameOverReason gameOverReason)
@@ -694,7 +688,6 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             return true;
         }
 
-        // Optional "win with others" mode: Lawyer wins if their (alive) client wins.
         if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode == LawyerWinMode.WinWithClient)
         {
             try
@@ -711,7 +704,6 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
             try
             {
-                // Match TownOfUs Mercenary behavior: allow "winner via game modifier" to count too.
                 if (Client.GetModifiers<GameModifier>().Any(m => m.DidWin(gameOverReason) == true))
                 {
                     return true;
