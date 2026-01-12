@@ -1,4 +1,5 @@
 using Il2CppInterop.Runtime.Attributes;
+using AmongUs.GameOptions;
 using MiraAPI.GameOptions;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
@@ -13,11 +14,36 @@ using TownOfUs.Modules.Wiki;
 using TownOfUs.Roles;
 using TownOfUs.Utilities;
 using UnityEngine;
+using Reactor.Networking.Rpc;
+using Reactor.Utilities;
+using System.Collections;
 
 namespace TouMiraRolesExtension.Roles.Impostor;
 
 public sealed class HackerRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsRole, IWikiDiscoverable, IDoomable
 {
+    private static bool IsHackerRole(PlayerControl? player)
+    {
+        if (player == null || player.Data?.Role == null)
+        {
+            return false;
+        }
+
+        if (player.Data.Role is HackerRole)
+        {
+            return true;
+        }
+
+        try
+        {
+            return player.Data.Role.Role == (RoleTypes)RoleId.Get<HackerRole>();
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public DoomableType DoomHintType => DoomableType.Insight;
     public string LocaleKey => "Hacker";
     public string RoleName => TouLocale.Get($"ExtensionRole{LocaleKey}");
@@ -80,7 +106,7 @@ public sealed class HackerRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsR
             return;
         }
 
-        if (hacker?.Data?.Role is not HackerRole)
+        if (!IsHackerRole(hacker))
         {
             return;
         }
@@ -96,23 +122,55 @@ public sealed class HackerRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsR
             return;
         }
 
-        RpcHackerSetJamCharges(PlayerControl.LocalPlayer, hacker.PlayerId, HackerSystem.GetJamCharges(hacker.PlayerId));
-        RpcHackerStartJam(PlayerControl.LocalPlayer, opts.JamDurationSeconds);
+        var host = PlayerControl.LocalPlayer;
+        if (host == null)
+        {
+            return;
+        }
+
+        var newCharges = HackerSystem.GetJamCharges(hacker.PlayerId);
+        HackerSystem.SetJamCharges(hacker.PlayerId, newCharges);
+        HackerSystem.ActivateJam(opts.JamDurationSeconds);
+
+        Coroutines.Start(CoBroadcastJamNextFrame(host, hacker.PlayerId, newCharges, opts.JamDurationSeconds));
     }
 
-    [MethodRpc((uint)ExtensionRpc.HackerStartJam)]
+    private static IEnumerator CoBroadcastJamNextFrame(PlayerControl host, byte hackerId, byte newCharges, float durationSeconds)
+    {
+        yield return null;
+
+        if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
+        {
+            yield break;
+        }
+
+        if (host == null || PlayerControl.LocalPlayer == null)
+        {
+            yield break;
+        }
+
+        if (!HackerSystem.IsJammed)
+        {
+            yield break;
+        }
+
+        RpcHackerSetJamCharges(host, hackerId, newCharges);
+        RpcHackerStartJam(host, durationSeconds);
+    }
+
+    [MethodRpc((uint)ExtensionRpc.HackerStartJam, LocalHandling = RpcLocalHandling.Before)]
     public static void RpcHackerStartJam(PlayerControl sender, float durationSeconds)
     {
         HackerSystem.ActivateJam(durationSeconds);
     }
 
-    [MethodRpc((uint)ExtensionRpc.HackerSetJamCharges)]
+    [MethodRpc((uint)ExtensionRpc.HackerSetJamCharges, LocalHandling = RpcLocalHandling.Before)]
     public static void RpcHackerSetJamCharges(PlayerControl sender, byte targetPlayerId, byte charges)
     {
         HackerSystem.SetJamCharges(targetPlayerId, charges);
     }
 
-    [MethodRpc((uint)ExtensionRpc.HackerResetRound)]
+    [MethodRpc((uint)ExtensionRpc.HackerResetRound, LocalHandling = RpcLocalHandling.Before)]
     public static void RpcHackerResetRound(PlayerControl sender)
     {
         HackerSystem.ResetRoundState();

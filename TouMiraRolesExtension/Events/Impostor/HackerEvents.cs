@@ -1,9 +1,11 @@
 using InnerNet;
+using AmongUs.GameOptions;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
+using MiraAPI.Roles;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Options.Roles.Impostor;
 using TouMiraRolesExtension.Roles.Impostor;
@@ -14,6 +16,28 @@ namespace TouMiraRolesExtension.Events.Impostor;
 
 public static class HackerEvents
 {
+    private static bool IsHackerRole(PlayerControl? player)
+    {
+        if (player == null || player.Data?.Role == null)
+        {
+            return false;
+        }
+
+        if (player.Data.Role is HackerRole)
+        {
+            return true;
+        }
+
+        try
+        {
+            return player.Data.Role.Role == (RoleTypes)RoleId.Get<HackerRole>();
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     [RegisterEvent]
     public static void RoundStartEventHandler(RoundStartEvent @event)
     {
@@ -21,7 +45,6 @@ public static class HackerEvents
         {
             HackerSystem.ResetAll();
 
-            // Host initializes starting Jam charges for Hacker(s).
             if (AmongUsClient.Instance != null && AmongUsClient.Instance.AmHost && PlayerControl.LocalPlayer != null)
             {
                 var opts = OptionGroupSingleton<HackerOptions>.Instance;
@@ -30,7 +53,7 @@ public static class HackerEvents
 
                 foreach (var p in PlayerControl.AllPlayerControls.ToArray())
                 {
-                    if (p == null || !p.IsRole<HackerRole>())
+                    if (!IsHackerRole(p))
                     {
                         continue;
                     }
@@ -40,6 +63,12 @@ public static class HackerEvents
                 }
             }
         }
+    }
+
+    [RegisterEvent]
+    public static void GameEndEventHandler(GameEndEvent @event)
+    {
+        HackerSystem.ResetAll();
     }
 
     [RegisterEvent]
@@ -55,7 +84,7 @@ public static class HackerEvents
     public static void AfterMurderEventHandler(AfterMurderEvent @event)
     {
         var killer = @event.Source;
-        if (killer == null || killer.Data == null || !killer.IsRole<HackerRole>())
+        if (!IsHackerRole(killer))
         {
             return;
         }
