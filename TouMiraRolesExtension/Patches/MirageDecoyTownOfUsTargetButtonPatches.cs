@@ -12,15 +12,12 @@ using UnityEngine;
 
 namespace TouMiraRolesExtension.Patches;
 
-[HarmonyPatch]
 public static class MirageDecoyTownOfUsTargetButtonPatches
 {
-    [HarmonyPatch]
-    private static class ClickHandlerPatch
+    // Same motivation as MirageDecoyTownOfUsButtonPatches: patch the base handlers directly.
+    [HarmonyPatch(typeof(TownOfUsTargetButton<PlayerControl>), nameof(TownOfUsTargetButton<PlayerControl>.ClickHandler))]
+    private static class PlayerTargetClickHandlerPatch
     {
-        public static IEnumerable<MethodBase> TargetMethods() =>
-            GetTouTargetButtonConcreteMethods("ClickHandler", argTypes: null);
-
         [HarmonyPrefix]
         [HarmonyPriority(Priority.First)]
         public static bool Prefix(object __instance)
@@ -40,12 +37,9 @@ public static class MirageDecoyTownOfUsTargetButtonPatches
         }
     }
 
-    [HarmonyPatch]
-    private static class FixedUpdateHandlerPatch
+    [HarmonyPatch(typeof(TownOfUsTargetButton<PlayerControl>), nameof(TownOfUsTargetButton<PlayerControl>.FixedUpdateHandler))]
+    private static class PlayerTargetFixedUpdateHandlerPatch
     {
-        public static IEnumerable<MethodBase> TargetMethods() =>
-            GetTouTargetButtonConcreteMethods("FixedUpdateHandler", new[] { typeof(PlayerControl) });
-
         [HarmonyPostfix]
         [HarmonyPriority(Priority.Last)]
         public static void Postfix(object __instance)
@@ -79,6 +73,66 @@ public static class MirageDecoyTownOfUsTargetButtonPatches
             ForceActionButtonVisualEnabled(actionButton);
             MirageDecoySystem.UpdateLocalOutline(local.GetTruePosition(), distance, GetOutlineColor(__instance));
         }
+    }
+
+    [HarmonyPatch(typeof(TownOfUsTargetButton<DeadBody>), nameof(TownOfUsTargetButton<DeadBody>.ClickHandler))]
+    private static class BodyTargetClickHandlerPatch
+    {
+        [HarmonyPrefix]
+        [HarmonyPriority(Priority.First)]
+        public static bool Prefix(object __instance)
+        {
+            if (__instance is Buttons.Crewmate.MirageDecoyButton)
+            {
+                return true;
+            }
+
+            if (!TryTriggerFromLocalPlayer(GetDistance(__instance)))
+            {
+                return true;
+            }
+
+            SpendCooldownAndUses(__instance);
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(TownOfUsTargetButton<DeadBody>), nameof(TownOfUsTargetButton<DeadBody>.FixedUpdateHandler))]
+    private static class BodyTargetFixedUpdateHandlerPatch
+    {
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        public static void Postfix(object __instance) => PlayerTargetFixedUpdateHandlerPatch.Postfix(__instance);
+    }
+
+    [HarmonyPatch(typeof(TownOfUsTargetButton<Vent>), nameof(TownOfUsTargetButton<Vent>.ClickHandler))]
+    private static class VentTargetClickHandlerPatch
+    {
+        [HarmonyPrefix]
+        [HarmonyPriority(Priority.First)]
+        public static bool Prefix(object __instance)
+        {
+            if (__instance is Buttons.Crewmate.MirageDecoyButton)
+            {
+                return true;
+            }
+
+            if (!TryTriggerFromLocalPlayer(GetDistance(__instance)))
+            {
+                return true;
+            }
+
+            SpendCooldownAndUses(__instance);
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(TownOfUsTargetButton<Vent>), nameof(TownOfUsTargetButton<Vent>.FixedUpdateHandler))]
+    private static class VentTargetFixedUpdateHandlerPatch
+    {
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        public static void Postfix(object __instance) => PlayerTargetFixedUpdateHandlerPatch.Postfix(__instance);
     }
 
     private static bool TryTriggerFromLocalPlayer(float maxDistance)
@@ -211,59 +265,5 @@ public static class MirageDecoyTownOfUsTargetButtonPatches
         }
 
         return Palette.EnabledColor;
-    }
-
-    private static IEnumerable<MethodBase> GetTouTargetButtonConcreteMethods(string methodName, Type[]? argTypes)
-    {
-        var methods = new HashSet<MethodBase>();
-        foreach (var t in AccessTools.AllTypes().Where(t => t != null))
-        {
-            if (!t.IsClass || t.IsAbstract || t.ContainsGenericParameters)
-            {
-                continue;
-            }
-
-            var b = FindClosedGenericBase(t, typeof(TownOfUsTargetButton<>));
-            if (b == null || b.ContainsGenericParameters)
-            {
-                continue;
-            }
-
-            MethodInfo? m = argTypes == null
-                ? AccessTools.Method(t, methodName)
-                : AccessTools.Method(t, methodName, argTypes);
-
-            if (m != null)
-            {
-                methods.Add(m);
-            }
-        }
-
-        foreach (var m in methods)
-        {
-            yield return m;
-        }
-    }
-
-    private static Type? FindClosedGenericBase(Type type, Type genericBaseDef)
-    {
-        var cur = type;
-        while (cur != null && cur != typeof(object))
-        {
-            var bt = cur.BaseType;
-            if (bt == null)
-            {
-                return null;
-            }
-
-            if (bt.IsGenericType && bt.GetGenericTypeDefinition() == genericBaseDef)
-            {
-                return bt;
-            }
-
-            cur = bt;
-        }
-
-        return null;
     }
 }

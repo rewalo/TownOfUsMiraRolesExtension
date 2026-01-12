@@ -12,6 +12,10 @@ public sealed class LawyerOptions : AbstractOptionGroup<LawyerRole>
 {
     public override string GroupName => TouLocale.Get("ExtensionRoleLawyer", "Lawyer");
 
+    [ModdedEnumOption("ExtensionOptionLawyerWinMode", typeof(LawyerWinMode),
+        ["ExtensionOptionLawyerWinModeEnumWithClient", "ExtensionOptionLawyerWinModeEnumStealWin"])]
+    public LawyerWinMode WinMode { get; set; } = LawyerWinMode.StealWin;
+
     [ModdedNumberOption("ExtensionOptionLawyerKillerClientChance", 0f, 100f, 10f, MiraNumberSuffixes.Percent)]
     public float KillerClientChance { get; set; } = 80f;
 
@@ -36,4 +40,10 @@ public sealed class LawyerOptions : AbstractOptionGroup<LawyerRole>
 
     [ModdedNumberOption("ExtensionOptionLawyerMaxObjectionsPerMeeting", 0f, 10f, 1f, MiraNumberSuffixes.None, "0")]
     public float MaxObjectionsPerMeeting { get; set; } = 1f;
+}
+
+public enum LawyerWinMode
+{
+    WinWithClient,
+    StealWin
 }

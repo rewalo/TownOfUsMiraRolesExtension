@@ -58,6 +58,9 @@
   <string name="ExtensionRoleLawyerObjectWikiDescription">During meetings, click the objection button on your client's vote area to object to all votes, clearing them and forcing players to vote again.</string>
   
   <!-- Lawyer Options -->
+  <string name="ExtensionOptionLawyerWinMode">Lawyer Win Mode</string>
+  <string name="ExtensionOptionLawyerWinModeEnumWithClient">Win With Client</string>
+  <string name="ExtensionOptionLawyerWinModeEnumStealWin">Steal Win</string>
   <string name="ExtensionOptionLawyerDieOnClientDeath">Lawyer Dies When Client Dies</string>
   <string name="ExtensionOptionLawyerBecomesClientDeath">On Client Death, Lawyer Becomes</string>
   <string name="ExtensionOptionLawyerGetVotedOutWithClient">Lawyer Gets Voted Out With Client</string>
@@ -147,6 +150,30 @@
   <string name="ExtensionOptionWraithLanternCooldown">Lantern Cooldown</string>
   <string name="ExtensionOptionWraithLanternDuration">Lantern Duration</string>
   <string name="ExtensionOptionWraithInvisibleDuration">Invisible Duration</string>
+
+  <!-- Hacker Role -->
+  <string name="ExtensionRoleHacker">Hacker</string>
+  <string name="ExtensionRoleHackerIntroBlurb">Download system information and jam comms.</string>
+  <string name="ExtensionRoleHackerTabDescription">Download and jam equipment, kill for extra jam charges.</string>
+  <string name="ExtensionRoleHackerWikiDescription">The Hacker is an Impostor Support role that can download information from nearby equipment to charge a portable device. Once you start downloading, you're locked into that equipment type until the next round. Jam disrupts information systems as if comms were sabotaged, but emergency meetings can still be called.</string>
+  <string name="ExtensionRoleHackerDownload">Download</string>
+  <string name="ExtensionRoleHackerDownloadWikiDescription">While near a downloadable console (Admin/Cams/Vitals/Door Log), download to charge your battery. Every 1 second downloading grants 2 seconds of device battery (configurable). You cannot switch equipment type until the next round.</string>
+  <string name="ExtensionRoleHackerDevice">Device</string>
+  <string name="ExtensionRoleHackerDeviceWikiDescription">Use the downloaded system anywhere, consuming battery over time.</string>
+  <string name="ExtensionRoleHackerJam">Jam</string>
+  <string name="ExtensionRoleHackerJamWikiDescription">Spend a Jam charge to disrupt information systems for a duration. This behaves like comms being down, but does not prevent calling emergency meetings.</string>
+
+  <!-- Hacker Options -->
+  <string name="ExtensionOptionHackerMaxBatterySeconds">Maximum Battery Duration</string>
+  <string name="ExtensionOptionHackerBatteryPerDownloadSecond">Battery Gained Per Download Second</string>
+  <string name="ExtensionOptionHackerDownloadRange">Download Range</string>
+  <string name="ExtensionOptionHackerMoveWithDevice">Move While Using Device</string>
+  <string name="ExtensionOptionHackerSimpleModeJamOnly">Simple Mode (Jam Only)</string>
+  <string name="ExtensionOptionHackerInitialJamCharges">Initial Jam Charges</string>
+  <string name="ExtensionOptionHackerJamChargesPerKill">Jam Charges Per Kill</string>
+  <string name="ExtensionOptionHackerJamMaxCharges">Max Jam Charges</string>
+  <string name="ExtensionOptionHackerJamCooldown">Jam Cooldown</string>
+  <string name="ExtensionOptionHackerJamDuration">Jam Duration</string>
 
   <!-- Forestaller Role -->
   <string name="ExtensionRoleForestaller">Forestaller</string>

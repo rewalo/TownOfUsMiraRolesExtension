@@ -7,6 +7,8 @@ using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
 using MiraAPI.Modifiers;
+using MiraAPI.GameOptions;
+using TouMiraRolesExtension.Options.Roles.Neutral;
 
 namespace TouMiraRolesExtension.Patches;
 
@@ -29,6 +31,12 @@ public static class LawyerStealWinPatch
             return true;
         }
 
+        // If configured to win alongside the client, do not override/steal the end-game.
+        if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
+        {
+            return true;
+        }
+
         // Prevent recursion when LawyerGameOver triggers its own end-game RPC.
         if (InProgress || endReason == CustomGameOver.GameOverReason<LawyerGameOver>())
         {
@@ -47,9 +55,6 @@ public static class LawyerStealWinPatch
             return true;
         }
 
-        // If someone is currently being exiled, treat them as dead for steal purposes.
-        // This prevents edge-cases where the exiled player hasn't had Data.IsDead set yet
-        // when RpcEndGame fires (e.g. Lawyer being ejected).
         var exiled = ExileController.Instance?.initData?.networkedPlayer?.Object;
 
         var winners = new HashSet<NetworkedPlayerInfo>();
@@ -65,14 +70,11 @@ public static class LawyerStealWinPatch
                 continue;
             }
 
-            // Find the client via replicated modifier to avoid relying on l.Client (which can be null/desynced).
             var client = LawyerUtils.FindClientForLawyer(lawyerPc.PlayerId);
             if (client == null || client.HasDied() || client.Data == null || exiled == client)
             {
                 continue;
             }
-
-            // Sanity: ensure the client is actually marked as this lawyer's client.
             if (!client.HasModifier<LawyerTargetModifier>(m => m.OwnerId == lawyerPc.PlayerId))
             {
                 continue;
@@ -87,8 +89,6 @@ public static class LawyerStealWinPatch
             winners.Add(lawyerPc.Data);
             winners.Add(client.Data);
         }
-
-        // Sanity: LawyerGameOver expects at least Lawyer + Client.
         if (winners.Count < 2)
         {
             return true;
@@ -103,8 +103,6 @@ public static class LawyerStealWinPatch
         {
             InProgress = false;
         }
-
-        // Cancel the original win.
         return false;
     }
 }

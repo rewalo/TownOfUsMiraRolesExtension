@@ -19,5 +19,9 @@ public enum ExtensionRpc : uint
     MirageTriggerDecoy,
     MiragePrimeDecoy,
     WitchClearAllSpellbound,
-    WitchClearSpellboundPlayer
+    WitchClearSpellboundPlayer,
+    HackerActivateJam,
+    HackerStartJam,
+    HackerSetJamCharges,
+    HackerResetRound
 }

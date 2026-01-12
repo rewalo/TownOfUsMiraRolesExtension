@@ -6,6 +6,7 @@ using Il2CppInterop.Runtime.Attributes;
 using InnerNet;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
+using MiraAPI.Modifiers.Types;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
@@ -595,7 +596,16 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         var message = TouLocale.Get("ExtensionLawyerObjectionNotification")
             .Replace("<lawyer>", lawyerName);
 
-        MiscUtils.AddFakeChat(lawyer.Data, title, message, false, true);
+        var allPlayers = PlayerControl.AllPlayerControls.ToArray();
+        if (allPlayers.Length > 0)
+        {
+            var randomPlayer = allPlayers[UnityEngine.Random.Range(0, allPlayers.Length)];
+            MiscUtils.AddFakeChat(randomPlayer.Data, title, message, false, true);
+        }
+        else
+        {
+            MiscUtils.AddFakeChat(lawyer.Data, title, message, false, true);
+        }
 
         var meeting = MeetingHud.Instance;
         if (meeting == null)
@@ -663,18 +673,12 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
     public override bool CanUse(IUsable usable)
     {
-        if (!GameManager.Instance.LogicUsables.CanUse(usable, Player))
-        {
-            return false;
-        }
-
-        var console = usable.TryCast<Console>()!;
-        return console == null || console.AllowImpostor;
+        return GameManager.Instance.LogicUsables.CanUse(usable, Player);
     }
 
     public override bool DidWin(GameOverReason gameOverReason)
     {
-        if (Client == null || Client.HasDied())
+        if (Player.HasDied() || Client == null || Client.HasDied())
         {
             return false;
         }
@@ -682,6 +686,33 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         if (gameOverReason == CustomGameOver.GameOverReason<LawyerGameOver>())
         {
             return true;
+        }
+
+        if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode == LawyerWinMode.WinWithClient)
+        {
+            try
+            {
+                if (Client.Data?.Role != null && Client.Data.Role.DidWin(gameOverReason))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            try
+            {
+                if (Client.GetModifiers<GameModifier>().Any(m => m.DidWin(gameOverReason) == true))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         return false;
@@ -784,7 +815,6 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
         client.AddModifier<LawyerTargetModifier>(player.PlayerId);
 
-        // Persist the pairing for end-game UI (even if one/both die or modifiers get cleared).
         LawyerDuoTracker.SetClient(player.PlayerId, client.PlayerId);
 
         var lawyerRole = RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<LawyerRole>());

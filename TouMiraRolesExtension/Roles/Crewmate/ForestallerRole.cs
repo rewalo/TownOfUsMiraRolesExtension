@@ -1,7 +1,6 @@
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
-using TownOfUs;
 using TownOfUs.Extensions;
 using TownOfUs.Modules.Localization;
 using TownOfUs.Modules.Wiki;
@@ -14,7 +13,7 @@ namespace TouMiraRolesExtension.Roles.Crewmate;
 /// Forestaller role: when they complete all tasks, sabotages are disabled (while they are alive).
 /// They are revealed in meetings after completing all tasks.
 /// </summary>
-public sealed class ForestallerRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsRole, IWikiDiscoverable, IDoomable
+public sealed class ForestallerRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsRole, IWikiDiscoverable, IDoomable, IUnguessable
 {
     public DoomableType DoomHintType => DoomableType.Insight;
     public string LocaleKey => "Forestaller";
@@ -48,4 +47,7 @@ public sealed class ForestallerRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITown
     {
         Modules.ForestallerSystem.TryActivateIfCompletedAllTasks(Player);
     }
+
+    public bool IsGuessable => Player != null && !Modules.ForestallerSystem.IsForestallerRevealed(Player.PlayerId);
+    public RoleBehaviour AppearAs => this;
 }
