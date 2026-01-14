@@ -18,7 +18,7 @@ public static class LawyerDuoTracker
 
     public static void SetClient(byte lawyerId, byte clientId)
     {
-        // Remove old mapping if it exists.
+
         if (LawyerToClient.TryGetValue(lawyerId, out var oldClientId) &&
             ClientToLawyers.TryGetValue(oldClientId, out var oldSet))
         {

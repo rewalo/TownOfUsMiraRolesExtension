@@ -2,14 +2,13 @@ using MiraAPI.GameOptions;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using Reactor.Utilities;
-using Reactor.Utilities.Extensions;
 using TouMiraRolesExtension.Assets;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Options.Roles.Crewmate;
 using TouMiraRolesExtension.Roles.Crewmate;
 using TownOfUs.Buttons;
-using TownOfUs.Modules.Localization;
 using TownOfUs.Modules;
+using TownOfUs.Modules.Localization;
 using TownOfUs.Utilities;
 using UnityEngine;
 
@@ -165,11 +164,6 @@ public sealed class MirageDecoyButton : TownOfUsRoleButton<MirageRole>
                 }
             }
         }
-
-        if (MeetingHud.Instance)
-        {
-            // no-op
-        }
     }
 
     protected override void OnClick()
@@ -236,11 +230,21 @@ public sealed class MirageDecoyButton : TownOfUsRoleButton<MirageRole>
             return mirage;
         }
 
-        var candidates = PlayerControl.AllPlayerControls.ToArray()
-            .Where(p => p != null && !p.HasDied() && p.PlayerId != mirage.PlayerId)
-            .ToList();
+        var candidates = new List<PlayerControl>();
+        foreach (var pc in PlayerControl.AllPlayerControls)
+        {
+            if (pc != null && !pc.HasDied() && pc.PlayerId != mirage.PlayerId)
+            {
+                candidates.Add(pc);
+            }
+        }
 
-        return candidates.Count == 0 ? mirage : candidates.Random();
+        if (candidates.Count == 0)
+        {
+            return mirage;
+        }
+
+        return candidates[UnityEngine.Random.Range(0, candidates.Count)];
     }
 
     private void PrimeAtCurrentPosition(PlayerControl mirage)

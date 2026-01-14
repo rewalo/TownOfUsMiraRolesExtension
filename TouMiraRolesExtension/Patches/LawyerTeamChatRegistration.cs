@@ -1,15 +1,9 @@
-using TownOfUs.Patches.Options;
-using TouMiraRolesExtension.Modifiers;
-using TouMiraRolesExtension.Options;
-using TouMiraRolesExtension.Roles.Neutral;
+using MiraAPI.GameOptions;
 using TouMiraRolesExtension.Utilities;
 using TownOfUs;
-using TownOfUs.Modules.Localization;
-using static TownOfUs.Patches.Options.TeamChatPatches;
-using MiraAPI.GameOptions;
-using TownOfUs.Utilities;
-using MiraAPI.Modifiers;
+using TownOfUs.Patches.Options;
 using UnityEngine;
+using static TownOfUs.Patches.Options.TeamChatPatches;
 
 namespace TouMiraRolesExtension.Patches;
 

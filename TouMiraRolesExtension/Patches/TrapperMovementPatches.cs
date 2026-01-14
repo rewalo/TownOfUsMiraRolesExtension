@@ -5,7 +5,7 @@ using TownOfUs.Modules;
 using TownOfUs.Utilities;
 using UnityEngine;
 
-#pragma warning disable SA1313 // Parameter names should begin with lower-case letter
+#pragma warning disable SA1313 
 
 namespace TouMiraRolesExtension.Patches;
 

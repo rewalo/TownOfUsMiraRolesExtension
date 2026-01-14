@@ -1,9 +1,4 @@
-using MiraAPI.GameOptions;
 using TouMiraRolesExtension.Assets;
-using TouMiraRolesExtension.Options.Roles.Impostor;
-using TouMiraRolesExtension.Roles.Impostor;
-using TownOfUs.Assets;
-using TownOfUs.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -90,10 +85,6 @@ public static class WraithLanternSystem
         SpawnBrokenVisual(pos);
     }
 
-    public static void UpdateHost()
-    {
-        // Intentionally empty - host updates are handled elsewhere
-    }
 
     private static void TryCopyVentRenderSettings(SpriteRenderer targetRenderer, out float zAxis)
     {

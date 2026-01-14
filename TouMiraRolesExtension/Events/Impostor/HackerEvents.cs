@@ -1,15 +1,12 @@
-using InnerNet;
 using AmongUs.GameOptions;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
-using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Options.Roles.Impostor;
 using TouMiraRolesExtension.Roles.Impostor;
-using TownOfUs.Utilities;
 
 namespace TouMiraRolesExtension.Events.Impostor;
 

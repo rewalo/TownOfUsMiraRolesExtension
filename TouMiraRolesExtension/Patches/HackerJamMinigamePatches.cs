@@ -1,6 +1,4 @@
-using System;
 using HarmonyLib;
-using System.Reflection;
 using TouMiraRolesExtension.Modules;
 using UnityEngine;
 using UnityEngine.UI;
@@ -112,14 +110,14 @@ public static class HackerJamMinigamePatches
                     comp.gameObject.SetActive(active);
                     return;
                 case System.Collections.IEnumerable enumerable:
-                {
-                    foreach (var item in enumerable)
                     {
-                        TrySetActive(item, active);
-                    }
+                        foreach (var item in enumerable)
+                        {
+                            TrySetActive(item, active);
+                        }
 
-                    return;
-                }
+                        return;
+                    }
             }
         }
         catch
@@ -476,7 +474,7 @@ public static class HackerJamMinigamePatches
                     }
 
                     var name = child.name.ToLowerInvariant();
-                    if (name.Contains("content") || name.Contains("viewport") || 
+                    if (name.Contains("content") || name.Contains("viewport") ||
                         (name.Contains("scroll") && name.Contains("view")))
                     {
                         logContainer = child;

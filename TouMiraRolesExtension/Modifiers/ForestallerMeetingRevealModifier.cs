@@ -1,7 +1,7 @@
 using Il2CppInterop.Runtime.Attributes;
+using TouMiraRolesExtension.Roles.Crewmate;
 using TownOfUs.Modifiers;
 using TownOfUs.Utilities;
-using TouMiraRolesExtension.Roles.Crewmate;
 
 namespace TouMiraRolesExtension.Modifiers;
 
@@ -33,7 +33,7 @@ public sealed class ForestallerMeetingRevealModifier : RevealModifier
         base.OnActivate();
         if (RevealRole && ShownRole == null)
         {
-            ShownRole = _role ?? (Player.Data?.Role as RoleBehaviour);
+            ShownRole = _role ?? (Player.Data?.Role);
         }
     }
 

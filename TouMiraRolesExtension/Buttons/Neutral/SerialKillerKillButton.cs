@@ -1,20 +1,20 @@
 using MiraAPI.GameOptions;
-using MiraAPI.Networking;
-using MiraAPI.Utilities.Assets;
-using TownOfUs.Options.Modifiers.Alliance;
-using TouMiraRolesExtension.Roles.Neutral;
-using TouMiraRolesExtension.Modules;
-using TouMiraRolesExtension.Modifiers;
-using TouMiraRolesExtension.Options.Roles.Neutral;
-using TownOfUs.Utilities;
-using TownOfUs.Assets;
-using TownOfUs.Roles;
-using TownOfUs.Modules;
-using UnityEngine;
-using TownOfUs.Buttons;
 using MiraAPI.Keybinds;
 using MiraAPI.Modifiers;
+using MiraAPI.Networking;
+using MiraAPI.Utilities.Assets;
+using TouMiraRolesExtension.Modifiers;
+using TouMiraRolesExtension.Modules;
+using TouMiraRolesExtension.Options.Roles.Neutral;
+using TouMiraRolesExtension.Roles.Neutral;
+using TownOfUs.Assets;
+using TownOfUs.Buttons;
 using TownOfUs.Modifiers;
+using TownOfUs.Modules;
+using TownOfUs.Options.Modifiers.Alliance;
+using TownOfUs.Roles;
+using TownOfUs.Utilities;
+using UnityEngine;
 
 namespace TouMiraRolesExtension.Buttons.Neutral;
 
@@ -75,12 +75,12 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
             }
             else
             {
-                // Vent kill
+
                 player.RpcCustomMurder(Target, true, true, false, false, true, true);
                 return;
             }
         }
-        // Regular kill
+
         player.RpcCustomMurder(Target);
     }
 
@@ -95,7 +95,7 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
         if (player.inVent && Vent.currentVent != null && !player.HasModifier<SerialKillerNoVentModifier>())
         {
             CheckVentKillOpportunity(Vent.currentVent, player);
-            
+
             if (SerialKillerVentKillSystem.TryGetVentKillTarget(player.PlayerId, out var ventTarget))
             {
                 if (ventTarget != null && !ventTarget.HasDied() && ventTarget.inVent)
@@ -125,7 +125,7 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
 
         return player.GetClosestLivingPlayer(true, Distance);
     }
-    
+
     private static void CheckVentKillOpportunity(Vent vent, PlayerControl serialKiller)
     {
         if (serialKiller.HasModifier<SerialKillerNoVentModifier>())
@@ -174,7 +174,7 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
         {
             return false;
         }
-        
+
         if (target.inVent)
         {
             if (player.inVent && Vent.currentVent != null && !player.HasModifier<SerialKillerNoVentModifier>() && SerialKillerVentKillSystem.TryGetVentKillTarget(player.PlayerId, out var ventTarget))
@@ -280,10 +280,6 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
         return Target != null && Timer <= 0;
     }
 
-    protected override void FixedUpdate(PlayerControl playerControl)
-    {
-        base.FixedUpdate(playerControl);
-    }
 
     private static void UpdateVentHighlighting()
     {
@@ -295,7 +291,7 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
         {
             if (ShipStatus.Instance != null)
             {
-                foreach (var vent in ShipStatus.Instance.AllVents.Where(vent => vent != null))
+                foreach (var vent in ShipStatus.Instance.AllVents.Where(v => v != null))
                 {
                     vent.SetOutline(false, false, Color.clear);
                 }
@@ -387,7 +383,7 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
             {
                 continue;
             }
-            
+
             if (VentOccupancySystem.TryGetOccupant(vent.Id, out var occupantId) && occupantId == player.PlayerId)
             {
                 return vent.Id;

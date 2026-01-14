@@ -1,8 +1,8 @@
 using HarmonyLib;
-using TownOfUs.Roles.Crewmate;
 using TownOfUs.Modules.Localization;
+using TownOfUs.Roles.Crewmate;
 
-#pragma warning disable SA1313 // Parameter names should begin with lower-case letter
+#pragma warning disable SA1313 
 
 namespace TouMiraRolesExtension.Patches;
 

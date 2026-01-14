@@ -1,13 +1,8 @@
-using System.Linq;
-using MiraAPI.GameOptions;
+using Reactor.Utilities.Extensions;
 using TMPro;
-using TownOfUs.Extensions;
 using TownOfUs.Modules;
 using TownOfUs.Utilities;
-using TouMiraRolesExtension.Options.Roles.Crewmate;
 using UnityEngine;
-using Reactor.Utilities;
-using Reactor.Utilities.Extensions;
 
 namespace TouMiraRolesExtension.Modules;
 
@@ -46,7 +41,7 @@ public static class MirageDecoySystem
 
                 try
                 {
-                    LocalOutlinedCosmetics.currentBodySprite?.BodySprite?.SetOutline((Color?)null);
+                    LocalOutlinedCosmetics.currentBodySprite?.BodySprite?.SetOutline(null);
                 }
                 catch
                 {
@@ -55,7 +50,7 @@ public static class MirageDecoySystem
             }
             else if (LocalOutlinedBody != null)
             {
-                LocalOutlinedBody.SetOutline((Color?)null);
+                LocalOutlinedBody.SetOutline(null);
             }
         }
         catch
@@ -305,10 +300,8 @@ public static class MirageDecoySystem
 
     public static void UpdateHost()
     {
-        if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost)
-        {
-            return;
-        }
+
+
 
         if (ActiveByMirage.Count == 0)
         {
@@ -316,21 +309,37 @@ public static class MirageDecoySystem
         }
 
         var now = Time.time;
-        var expired = ActiveByMirage
-            .Where(kvp => kvp.Value.IsVisible && now >= kvp.Value.ExpiresAt)
-            .Select(kvp => kvp.Key)
-            .ToList();
+        var expired = new List<byte>();
+        foreach (var kvp in ActiveByMirage)
+        {
+            if (kvp.Value.IsVisible && now >= kvp.Value.ExpiresAt)
+            {
+                expired.Add(kvp.Key);
+            }
+        }
 
         foreach (var mirageId in expired)
         {
             var mirage = MiscUtils.PlayerById(mirageId);
             if (mirage == null)
             {
+
                 ClearForPlayer(mirageId);
                 continue;
             }
 
-            Roles.Crewmate.MirageRole.RpcMirageDestroyDecoy(mirage);
+            if (mirage.AmOwner)
+            {
+
+
+                Roles.Crewmate.MirageRole.RpcMirageDestroyDecoy(mirage);
+            }
+            else
+            {
+
+
+                ClearForPlayer(mirageId);
+            }
         }
     }
 

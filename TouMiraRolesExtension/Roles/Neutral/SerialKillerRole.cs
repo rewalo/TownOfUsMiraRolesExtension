@@ -1,19 +1,19 @@
+using AmongUs.GameOptions;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
-using TownOfUs.Assets;
-using TownOfUs.Roles;
-using TownOfUs.Utilities;
 using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Options.Roles.Neutral;
-using TownOfUs.Modules.Wiki;
-using TownOfUs.Modules.Localization;
-using UnityEngine;
-using TownOfUs.Roles.Neutral;
-using AmongUs.GameOptions;
+using TownOfUs.Assets;
 using TownOfUs.Extensions;
+using TownOfUs.Modules.Localization;
+using TownOfUs.Modules.Wiki;
+using TownOfUs.Roles;
+using TownOfUs.Roles.Neutral;
+using TownOfUs.Utilities;
+using UnityEngine;
 
 namespace TouMiraRolesExtension.Roles.Neutral;
 
@@ -53,14 +53,14 @@ public sealed class SerialKillerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITown
 
         var aliveCount = Helpers.GetAlivePlayers().Count;
         var killersAlive = MiscUtils.KillersAliveCount;
-        
+
         return aliveCount <= killersAlive && killersAlive == 1;
     }
 
     public override void Initialize(PlayerControl player)
     {
         RoleBehaviourStubs.Initialize(this, player);
-        
+
         if (!OptionGroupSingleton<SerialKillerOptions>.Instance.CanReportBodies && !Player.HasModifier<SerialKillerNoReportModifier>())
         {
             Player.AddModifier<SerialKillerNoReportModifier>();

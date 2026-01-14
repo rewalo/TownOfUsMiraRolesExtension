@@ -1,14 +1,13 @@
-using System.Collections.Generic;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
+using TMPro;
+using TouMiraRolesExtension.Assets;
 using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Options.Roles.Impostor;
 using TouMiraRolesExtension.Roles.Impostor;
-using TouMiraRolesExtension.Assets;
 using TownOfUs.Patches;
 using TownOfUs.Utilities;
-using TMPro;
 using UnityEngine;
 
 namespace TouMiraRolesExtension.Patches;
@@ -164,7 +163,7 @@ public static class WitchSpellboundIndicatorPatch
         }
 
 
-        var perp = new Vector2(x: -direction.y, y: direction.x);
+        var perp = new Vector2(-direction.y, direction.x);
         var offset1 = localPos + perp * 0.3f;
         var offset2 = localPos - perp * 0.3f;
 

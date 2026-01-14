@@ -1,6 +1,4 @@
-using System.Collections;
 using BepInEx.Logging;
-using InnerNet;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -8,6 +6,7 @@ using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using Reactor.Utilities;
+using System.Collections;
 using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Options.Roles.Impostor;
 using TouMiraRolesExtension.Roles.Impostor;
@@ -33,7 +32,7 @@ public static class WitchEvents
         _meetingCount++;
         Logger.LogWarning($"[Witch] StartMeetingEventHandler: Meeting count incremented to {_meetingCount}");
 
-        
+
         WitchRole.SendBatchedNotifications();
 
         if (MeetingHud.Instance == null)
@@ -41,7 +40,7 @@ public static class WitchEvents
             return;
         }
 
-        foreach (var player in PlayerControl.AllPlayerControls.ToArray())
+        foreach (var player in PlayerControl.AllPlayerControls)
         {
             if (player == null || !player.HasModifier<WitchSpellboundModifier>())
             {
@@ -87,8 +86,8 @@ public static class WitchEvents
             return;
         }
 
-        // If the witch is exiled, do NOT clear spellbound immediately (it would confirm the witch mid-meeting).
-        // We defer all processing/cleanup until after MeetingHud is gone inside CoProcessSpellDeaths().
+
+
 
         Logger.LogWarning($"[Witch] EjectionEventHandler: Starting spell death processing. Meeting count: {_meetingCount}");
         _processingDeaths = true;
@@ -108,7 +107,7 @@ public static class WitchEvents
 
             yield return new WaitForSeconds(0.1f);
 
-            // Only the host should decide deaths / clears; results are propagated via RPC.
+
             if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
             {
                 yield break;
@@ -118,7 +117,7 @@ public static class WitchEvents
 
             var witchAlive = false;
 
-            foreach (var player in PlayerControl.AllPlayerControls.ToArray())
+            foreach (var player in PlayerControl.AllPlayerControls)
             {
                 if (player == null || !player.IsRole<WitchRole>())
                 {
@@ -146,9 +145,14 @@ public static class WitchEvents
             Logger.LogWarning(
                 $"[Witch] CoProcessSpellDeaths: Meetings until death: {meetingsUntilDeath}, Current meeting count: {_meetingCount}");
 
-            var spellboundPlayers = PlayerControl.AllPlayerControls.ToArray()
-                .Where(p => p != null && p.HasModifier<WitchSpellboundModifier>())
-                .ToList();
+            var spellboundPlayers = new List<PlayerControl>();
+            foreach (var pc in PlayerControl.AllPlayerControls)
+            {
+                if (pc != null && pc.HasModifier<WitchSpellboundModifier>())
+                {
+                    spellboundPlayers.Add(pc);
+                }
+            }
 
             Logger.LogWarning($"[Witch] CoProcessSpellDeaths: Found {spellboundPlayers.Count} spellbound players");
 
@@ -195,8 +199,15 @@ public static class WitchEvents
 
                 if (shouldDie)
                 {
-                    var witch = PlayerControl.AllPlayerControls.ToArray()
-                        .FirstOrDefault(p => p != null && p.IsRole<WitchRole>());
+                    PlayerControl? witch = null;
+                    foreach (var pc in PlayerControl.AllPlayerControls)
+                    {
+                        if (pc != null && pc.IsRole<WitchRole>())
+                        {
+                            witch = pc;
+                            break;
+                        }
+                    }
 
                     Logger.LogWarning(
                         $"[Witch] CoProcessSpellDeaths: Attempting to kill {player.Data.PlayerName}, witch found: {witch != null}");
@@ -249,10 +260,10 @@ public static class WitchEvents
             return;
         }
 
-        
+
         if (victim.IsRole<WitchRole>())
         {
-            // If the witch dies during a meeting, defer cleanup until after the meeting to avoid confirming the witch.
+
             if (MeetingHud.Instance != null)
             {
                 if (!_processingDeaths)
@@ -275,7 +286,7 @@ public static class WitchEvents
     [RegisterEvent]
     public static void RoundStartEventHandler(RoundStartEvent @event)
     {
-        
+
         if (@event.TriggeredByIntro)
         {
             _meetingCount = 0;

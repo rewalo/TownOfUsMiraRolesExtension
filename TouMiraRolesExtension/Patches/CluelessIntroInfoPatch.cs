@@ -1,7 +1,7 @@
-using System.Reflection;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
+using System.Reflection;
 using TMPro;
 using TouMiraRolesExtension.Modifiers.Universal;
 using TownOfUs.Events;
@@ -18,11 +18,11 @@ namespace TouMiraRolesExtension.Patches;
 [HarmonyPatch]
 public static class CluelessIntroInfoPatch
 {
-#pragma warning disable CS8601 // Possible null reference assignment.
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable CS8601 
+#pragma warning disable S3011 
     private static readonly FieldInfo ModifierTextField = typeof(TownOfUsEventHandlers).GetField("ModifierText", BindingFlags.NonPublic | BindingFlags.Static);
-#pragma warning restore S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning restore CS8601 // Possible null reference assignment.
+#pragma warning restore S3011 
+#pragma warning restore CS8601 
 
     [HarmonyPatch(typeof(TownOfUsEventHandlers), nameof(TownOfUsEventHandlers.RunModChecks))]
     [HarmonyPostfix]
@@ -44,4 +44,4 @@ public static class CluelessIntroInfoPatch
     }
 }
 
-#pragma warning disable SA1313 // Parameter names should begin with lower-case letter
+#pragma warning disable SA1313

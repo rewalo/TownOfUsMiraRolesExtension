@@ -1,7 +1,6 @@
 using AmongUs.GameOptions;
 using HarmonyLib;
 using TouMiraRolesExtension.Modules;
-using TownOfUs.Buttons;
 using UnityEngine;
 
 namespace TouMiraRolesExtension.Patches;

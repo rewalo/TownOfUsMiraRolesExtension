@@ -1,15 +1,15 @@
 using MiraAPI.GameEnd;
-using TownOfUs.Interfaces;
-using TownOfUs.Roles;
-using TownOfUs.Utilities;
+using MiraAPI.GameOptions;
+using MiraAPI.Utilities;
 using TouMiraRolesExtension.GameOver;
 using TouMiraRolesExtension.Modules;
+using TouMiraRolesExtension.Options.Roles.Neutral;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
-using MiraAPI.Utilities;
-using MiraAPI.GameOptions;
-using TouMiraRolesExtension.Options.Roles.Neutral;
+using TownOfUs.Interfaces;
 using TownOfUs.Modules;
+using TownOfUs.Roles;
+using TownOfUs.Utilities;
 
 namespace TouMiraRolesExtension.Patches.WinConditions;
 
@@ -21,7 +21,7 @@ namespace TouMiraRolesExtension.Patches.WinConditions;
 /// </summary>
 public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithBlocking
 {
-    // Run after neutral (5) and lovers (10), but before crew/impostor style checks.
+
     public int Priority => 12;
 
     public bool BlocksOthers => true;
@@ -70,14 +70,14 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
             return false;
         }
 
-        // This is specifically to avoid "final 3" stalling against vanilla parity.
-        // If there isn't at least one impostor alive, a normal win should handle this (and be stolen via RpcEndGame).
+
+
         if (MiscUtils.ImpAliveCount <= 0)
         {
             return false;
         }
 
-        // Respect TownOfUs "continue game" blockers / continuing roles.
+
         if (MiscUtils.NKillersAliveCount > 0)
         {
             return false;
@@ -88,14 +88,14 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
             return false;
         }
 
-        // If any crewmate-killers are alive (e.g. Sheriff), don't force a parity end.
+
         if (MiscUtils.CrewKillersAliveCount > 0)
         {
             return false;
         }
 
-        // At least one alive Lawyer with an alive Client, and both must be among the 3 alive.
-        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
+
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls)
         {
             if (lawyerPc == null || lawyerPc.HasDied() || !lawyerPc.IsRole<LawyerRole>())
             {
@@ -113,14 +113,12 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
                 continue;
             }
 
-            if (!alivePlayers.Any(ap => ap.PlayerId == lawyerPc.PlayerId) ||
-                !alivePlayers.Any(ap => ap.PlayerId == client.PlayerId))
+            var alivePlayerIds = alivePlayers.Select(ap => ap.PlayerId).ToHashSet();
+            if (!alivePlayerIds.Contains(lawyerPc.PlayerId) || !alivePlayerIds.Contains(client.PlayerId))
             {
                 continue;
             }
 
-            // If the client has already won on their own (e.g., Serial Killer), don't trigger Lawyer win.
-            // Let the neutral win condition handle it instead.
             if (ClientHasWonAlone(client))
             {
                 continue;
@@ -134,13 +132,13 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
 
     public void TriggerGameOver(LogicGameFlowNormal gameFlow)
     {
-        // Only the host can decide game end.
+
         if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
         {
             return;
         }
 
-        // Only force LawyerGameOver when Lawyer is configured to steal/override the win.
+
         if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
         {
             return;
@@ -154,7 +152,7 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
         var alivePlayers = Helpers.GetAlivePlayers();
 
         var winners = new HashSet<NetworkedPlayerInfo>();
-        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls)
         {
             if (lawyerPc == null || lawyerPc.HasDied() || !lawyerPc.IsRole<LawyerRole>())
             {
@@ -177,8 +175,8 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
                 continue;
             }
 
-            if (!alivePlayers.Any(ap => ap.PlayerId == lawyerPc.PlayerId) ||
-                !alivePlayers.Any(ap => ap.PlayerId == client.PlayerId))
+            var alivePlayerIds = alivePlayers.Select(ap => ap.PlayerId).ToHashSet();
+            if (!alivePlayerIds.Contains(lawyerPc.PlayerId) || !alivePlayerIds.Contains(client.PlayerId))
             {
                 continue;
             }

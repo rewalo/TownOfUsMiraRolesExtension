@@ -18,7 +18,7 @@ public static class LawyerUtils
     /// <returns>The client player if found, null otherwise</returns>
     public static PlayerControl? FindClientForLawyer(byte lawyerId)
     {
-        foreach (var pc in PlayerControl.AllPlayerControls.ToArray())
+        foreach (var pc in PlayerControl.AllPlayerControls)
         {
             if (pc == null)
             {
@@ -47,10 +47,15 @@ public static class LawyerUtils
             return null;
         }
 
-        var lawyer = PlayerControl.AllPlayerControls.ToArray()
-            .FirstOrDefault(p => p != null && p.PlayerId == lawyerId && p.IsRole<LawyerRole>());
+        foreach (var pc in PlayerControl.AllPlayerControls)
+        {
+            if (pc != null && pc.PlayerId == lawyerId && pc.IsRole<LawyerRole>())
+            {
+                return pc.GetRole<LawyerRole>();
+            }
+        }
 
-        return lawyer?.GetRole<LawyerRole>();
+        return null;
     }
 
     /// <summary>
@@ -70,15 +75,17 @@ public static class LawyerUtils
 
         foreach (var modifier in lawyerModifiers)
         {
-            var lawyer = PlayerControl.AllPlayerControls.ToArray()
-                .FirstOrDefault(p => p != null && p.PlayerId == modifier.OwnerId && p.IsRole<LawyerRole>());
-
-            if (lawyer != null)
+            foreach (var pc in PlayerControl.AllPlayerControls)
             {
-                var lawyerRole = lawyer.GetRole<LawyerRole>();
-                if (lawyerRole != null)
+                if (pc != null && pc.PlayerId == modifier.OwnerId && pc.IsRole<LawyerRole>())
                 {
-                    lawyers.Add(lawyerRole);
+                    var lawyerRole = pc.GetRole<LawyerRole>();
+                    if (lawyerRole != null)
+                    {
+                        lawyers.Add(lawyerRole);
+                    }
+
+                    break;
                 }
             }
         }

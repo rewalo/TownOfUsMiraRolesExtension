@@ -1,15 +1,15 @@
 using MiraAPI.GameEnd;
-using TownOfUs.Interfaces;
-using TownOfUs.Utilities;
+using MiraAPI.GameOptions;
+using MiraAPI.Utilities;
 using TouMiraRolesExtension.GameOver;
 using TouMiraRolesExtension.Modules;
+using TouMiraRolesExtension.Options.Roles.Neutral;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
-using MiraAPI.Utilities;
-using MiraAPI.GameOptions;
-using TouMiraRolesExtension.Options.Roles.Neutral;
+using TownOfUs.Interfaces;
 using TownOfUs.Modules;
 using TownOfUs.Roles;
+using TownOfUs.Utilities;
 
 namespace TouMiraRolesExtension.Patches.WinConditions;
 
@@ -21,7 +21,7 @@ namespace TouMiraRolesExtension.Patches.WinConditions;
 /// </summary>
 public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBlocking
 {
-    // Run after most neutral conditions, but before crew/impostor style checks.
+
     public int Priority => 12;
 
     public bool BlocksOthers => true;
@@ -65,7 +65,7 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
             return false;
         }
 
-        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls)
         {
             if (lawyerPc == null || lawyerPc.HasDied() || !lawyerPc.IsRole<LawyerRole>())
             {
@@ -78,8 +78,8 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
                 continue;
             }
 
-            if (!alivePlayers.Any(ap => ap.PlayerId == lawyerPc.PlayerId) ||
-                !alivePlayers.Any(ap => ap.PlayerId == client.PlayerId))
+            var alivePlayerIds = alivePlayers.Select(ap => ap.PlayerId).ToHashSet();
+            if (!alivePlayerIds.Contains(lawyerPc.PlayerId) || !alivePlayerIds.Contains(client.PlayerId))
             {
                 continue;
             }
@@ -116,7 +116,7 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
 
         var winners = new HashSet<NetworkedPlayerInfo>();
 
-        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls)
         {
             if (lawyerPc == null || lawyerPc.HasDied() || !lawyerPc.IsRole<LawyerRole>())
             {
@@ -134,8 +134,8 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
                 continue;
             }
 
-            if (!alivePlayers.Any(ap => ap.PlayerId == lawyerPc.PlayerId) ||
-                !alivePlayers.Any(ap => ap.PlayerId == client.PlayerId))
+            var alivePlayerIds = alivePlayers.Select(ap => ap.PlayerId).ToHashSet();
+            if (!alivePlayerIds.Contains(lawyerPc.PlayerId) || !alivePlayerIds.Contains(client.PlayerId))
             {
                 continue;
             }

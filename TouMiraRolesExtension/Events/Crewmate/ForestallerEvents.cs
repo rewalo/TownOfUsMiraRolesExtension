@@ -2,7 +2,6 @@ using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.Events.Vanilla.Player;
-using TownOfUs.Roles;
 using TouMiraRolesExtension.Roles.Crewmate;
 
 namespace TouMiraRolesExtension.Events.Crewmate;

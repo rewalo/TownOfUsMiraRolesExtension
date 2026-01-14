@@ -1,49 +1,47 @@
-using System;
-using System.Collections;
-using System.Text.RegularExpressions;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Attributes;
 using InnerNet;
+using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
+using MiraAPI.Networking;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
 using Reactor.Utilities;
-using TownOfUs.Modifiers;
-using TownOfUs.Modifiers.Game;
-using TownOfUs.Modifiers.Neutral;
-using TownOfUs.Events;
-using TownOfUs.Options;
-using TownOfUs.Options.Roles.Neutral;
-using TownOfUs.Roles.Crewmate;
-using TownOfUs.Roles.Other;
-using TownOfUs.Utilities;
+using Reactor.Utilities.Extensions;
+using System.Collections;
+using System.Text.RegularExpressions;
+using TouMiraRolesExtension.Assets;
+using TouMiraRolesExtension.GameOver;
 using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Networking;
 using TouMiraRolesExtension.Options.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
-using TouMiraRolesExtension.Assets;
-using UnityEngine;
-using Random = System.Random;
-using TownOfUs.Extensions;
-using TownOfUs.Roles.Neutral;
-using TownOfUs.Roles;
-using TownOfUs.Modules.Wiki;
-using TownOfUs.Modules.Localization;
 using TownOfUs;
 using TownOfUs.Assets;
-using MiraAPI.GameEnd;
-using TouMiraRolesExtension.GameOver;
-using TownOfUs.GameOver;
-using MiraAPI.Networking;
+using TownOfUs.Events;
+using TownOfUs.Extensions;
+using TownOfUs.Modifiers;
+using TownOfUs.Modifiers.Game;
+using TownOfUs.Modifiers.Neutral;
 using TownOfUs.Modules;
-using Reactor.Utilities.Extensions;
+using TownOfUs.Modules.Localization;
+using TownOfUs.Modules.Wiki;
+using TownOfUs.Options;
+using TownOfUs.Options.Roles.Neutral;
+using TownOfUs.Roles;
+using TownOfUs.Roles.Crewmate;
+using TownOfUs.Roles.Neutral;
+using TownOfUs.Roles.Other;
+using TownOfUs.Utilities;
+using UnityEngine;
+using Random = System.Random;
 
 namespace TouMiraRolesExtension.Roles.Neutral;
 
@@ -80,9 +78,14 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             return;
         }
 
-        var lawyers = PlayerControl.AllPlayerControls.ToArray()
-            .Where(x => x.IsRole<LawyerRole>() && !x.HasDied())
-            .ToList();
+        var lawyers = new List<PlayerControl>();
+        foreach (var pc in PlayerControl.AllPlayerControls)
+        {
+            if (pc != null && pc.IsRole<LawyerRole>() && !pc.HasDied())
+            {
+                lawyers.Add(pc);
+            }
+        }
 
         var assignedClients = new HashSet<byte>();
 
@@ -97,36 +100,50 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
             if (chance <= killerChance)
             {
-                var killers = PlayerControl.AllPlayerControls.ToArray()
-                    .Where(x => !x.IsRole<LawyerRole>() && !x.HasDied() &&
-                                (x.IsImpostorAligned() || x.Is(RoleAlignment.NeutralKilling)) &&
-                                !x.HasModifier<ExecutionerTargetModifier>() &&
-                                !x.HasModifier<GuardianAngelTargetModifier>() &&
-                                !x.HasModifier<AllianceGameModifier>() &&
-                                !SpectatorRole.TrackedSpectators.Contains(x.Data.PlayerName) &&
-                                !assignedClients.Contains(x.PlayerId)).ToList();
+                var killers = new List<PlayerControl>();
+                foreach (var pc in PlayerControl.AllPlayerControls)
+                {
+                    if (pc == null || pc.IsRole<LawyerRole>() || pc.HasDied() ||
+                        (!pc.IsImpostorAligned() && !pc.Is(RoleAlignment.NeutralKilling)) ||
+                        pc.HasModifier<ExecutionerTargetModifier>() ||
+                        pc.HasModifier<GuardianAngelTargetModifier>() ||
+                        pc.HasModifier<AllianceGameModifier>() ||
+                        SpectatorRole.TrackedSpectators.Contains(pc.Data.PlayerName) ||
+                        assignedClients.Contains(pc.PlayerId))
+                    {
+                        continue;
+                    }
+
+                    killers.Add(pc);
+                }
 
                 if (killers.Count > 0)
                 {
-                    var shuffled = killers.OrderBy(x => rnd.Next()).ToList();
-                    target = shuffled[0];
+                    target = killers[rnd.Next(killers.Count)];
                 }
             }
 
             if (target == null)
             {
-                var allPlayers = PlayerControl.AllPlayerControls.ToArray()
-                    .Where(x => !x.IsRole<LawyerRole>() && !x.HasDied() &&
-                                !x.HasModifier<ExecutionerTargetModifier>() &&
-                                !x.HasModifier<GuardianAngelTargetModifier>() &&
-                                !x.HasModifier<AllianceGameModifier>() &&
-                                !SpectatorRole.TrackedSpectators.Contains(x.Data.PlayerName) &&
-                                !assignedClients.Contains(x.PlayerId)).ToList();
+                var allPlayers = new List<PlayerControl>();
+                foreach (var pc in PlayerControl.AllPlayerControls)
+                {
+                    if (pc == null || pc.IsRole<LawyerRole>() || pc.HasDied() ||
+                        pc.HasModifier<ExecutionerTargetModifier>() ||
+                        pc.HasModifier<GuardianAngelTargetModifier>() ||
+                        pc.HasModifier<AllianceGameModifier>() ||
+                        SpectatorRole.TrackedSpectators.Contains(pc.Data.PlayerName) ||
+                        assignedClients.Contains(pc.PlayerId))
+                    {
+                        continue;
+                    }
+
+                    allPlayers.Add(pc);
+                }
 
                 if (allPlayers.Count > 0)
                 {
-                    var shuffled = allPlayers.OrderBy(x => rnd.Next()).ToList();
-                    target = shuffled[0];
+                    target = allPlayers[rnd.Next(allPlayers.Count)];
                 }
             }
 
@@ -230,10 +247,10 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
     public bool WinConditionMet()
     {
-        // IMPORTANT:
-        // This method is used by TownOfUs' NeutralRoleWinCondition to decide whether the game should end NOW.
-        // Lawyer should NOT end the game just because their client is alive; Lawyer "steals" another win.
-        // We therefore latch win state via AboutToWin, which is set right before triggering LawyerGameOver.
+
+
+
+
         if (Player.HasDied() || !AboutToWin)
         {
             return false;
@@ -261,7 +278,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
             if (!Client.HasModifier<ClientRevealModifier>())
             {
-                var clientRole = Client.Data?.Role as RoleBehaviour;
+                var clientRole = Client.Data?.Role;
                 if (clientRole != null)
                 {
                     Client.AddModifier<ClientRevealModifier>(clientRole);
@@ -277,8 +294,8 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                 meetingMenu = new MeetingMenu(this, OnObjectClick, MeetingAbilityType.Click,
                     TouExtensionAssets.ObjectionButtonSprite, TouExtensionAssets.ObjectionButtonSprite, IsExemptForObjection)
                 {
-                    // Ensure the button isn't spawned behind the vote area (z must be negative).
-                    // We re-position precisely in ScaleObjectionButton(), but a sane default prevents "not rendering".
+
+
                     Position = new Vector3(-0.35f, 0f, -3f)
                 };
             }
@@ -407,7 +424,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
             if (!meetingMenu.Buttons.TryGetValue(Client.PlayerId, out var buttonGo) || buttonGo == null)
             {
-                // If the button was never created or was destroyed by older logic, regenerate.
+
                 meetingMenu.GenButtons(meeting, Player.AmOwner && !Player.HasDied() && !Client.HasDied());
                 meetingMenu.Buttons.TryGetValue(Client.PlayerId, out buttonGo);
             }
@@ -422,7 +439,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                 objectionsExhausted = true;
             }
 
-            // Only show during voting states; never destroy (HideSingle) here because that permanently removes the button.
+
             var showButton = !objectionsExhausted &&
                              maxObjections > 0 &&
                              (meeting.state == MeetingHud.VoteStates.Voted || meeting.state == MeetingHud.VoteStates.NotVoted) &&
@@ -544,8 +561,8 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             return false;
         }
 
-        // Avoid reflection (field names differ across builds). Parse the visible timer text instead.
-        // e.g. "Voting ends in: 15s"
+
+
         var remaining = TryGetVotingSecondsRemainingFromUi(meeting);
         return remaining.HasValue && remaining.Value <= seconds;
     }
@@ -558,17 +575,17 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
             return null;
         }
 
-        // Strip TMP tags.
+
         var cleaned = Regex.Replace(text, "<.*?>", string.Empty);
 
-        // Prefer explicit "15s" style.
+
         var match = SecondsRegex.Matches(cleaned).Cast<Match>().LastOrDefault(m => m.Success);
         if (match != null && int.TryParse(match.Groups[1].Value, out var sec))
         {
             return sec;
         }
 
-        // Fallback: last number in the string.
+
         var match2 = LastNumberRegex.Match(cleaned);
         if (match2.Success && int.TryParse(match2.Groups[1].Value, out var sec2))
         {
@@ -602,10 +619,18 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         var message = TouLocale.Get("ExtensionLawyerObjectionNotification")
             .Replace("<lawyer>", lawyerName);
 
-        var allPlayers = PlayerControl.AllPlayerControls.ToArray();
-        if (allPlayers.Length > 0)
+        var playerList = new List<PlayerControl>();
+        foreach (var pc in PlayerControl.AllPlayerControls)
         {
-            var randomPlayer = allPlayers[UnityEngine.Random.Range(0, allPlayers.Length)];
+            if (pc != null)
+            {
+                playerList.Add(pc);
+            }
+        }
+
+        if (playerList.Count > 0)
+        {
+            var randomPlayer = playerList[UnityEngine.Random.Range(0, playerList.Count)];
             MiscUtils.AddFakeChat(randomPlayer.Data, title, message, false, true);
         }
         else
@@ -805,8 +830,15 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
         {
             client.RpcRemoveModifier<LawyerTargetModifier>();
 
-            var previousLawyer = PlayerControl.AllPlayerControls.ToArray()
-    .FirstOrDefault(p => p != null && p.PlayerId == modifier.OwnerId && p.IsRole<LawyerRole>());
+            PlayerControl? previousLawyer = null;
+            foreach (var pc in PlayerControl.AllPlayerControls)
+            {
+                if (pc != null && pc.PlayerId == modifier.OwnerId && pc.IsRole<LawyerRole>())
+                {
+                    previousLawyer = pc;
+                    break;
+                }
+            }
             if (previousLawyer != null)
             {
                 var previousLawyerRole = previousLawyer.GetRole<LawyerRole>();
@@ -831,7 +863,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
         if (!client.HasModifier<ClientRevealModifier>())
         {
-            var clientRole = client.Data?.Role as RoleBehaviour;
+            var clientRole = client.Data?.Role;
             if (clientRole != null)
             {
                 client.AddModifier<ClientRevealModifier>(clientRole);

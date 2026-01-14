@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-using AmongUs.GameOptions;
 using Il2CppInterop.Runtime;
-using InnerNet;
 using TownOfUs.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -207,14 +203,14 @@ public static class HackerSystem
     private static bool TryGetAdminDistance(Vector2 from, float range, out float dist)
     {
         dist = float.MaxValue;
-        
-        // Cache map consoles to avoid expensive FindObjectsOfType calls
+
+
         if (_cachedMapConsoles == null || Time.frameCount != _cachedConsoleFrame)
         {
             _cachedMapConsoles = Object.FindObjectsOfType<MapConsole>();
             _cachedConsoleFrame = Time.frameCount;
         }
-        
+
         var consoles = _cachedMapConsoles;
         if (consoles == null || consoles.Length == 0)
         {
@@ -242,8 +238,8 @@ public static class HackerSystem
     private static bool TryGetVitalsDistance(Vector2 from, float range, out float dist)
     {
         dist = float.MaxValue;
-        
-        // Use cached system consoles
+
+
         var consoles = GetCachedSystemConsoles();
         if (consoles == null || consoles.Length == 0)
         {
@@ -296,17 +292,17 @@ public static class HackerSystem
     private static bool TryGetDoorLogDistance(Vector2 from, float range, out float dist)
     {
         dist = float.MaxValue;
-        
-        // Special handling for Mira HQ: use hardcoded position
+
+
         var mapId = (ExpandedMapNames)GameOptionsManager.Instance.currentNormalGameOptions.MapId;
         if (TutorialManager.InstanceExists)
         {
             mapId = (ExpandedMapNames)AmongUsClient.Instance.TutorialMapId;
         }
-        
+
         if (mapId is ExpandedMapNames.MiraHq)
         {
-            // Mira HQ doorlog position
+
             var miraDoorLogPos = new Vector2(15.9f, 4.8f);
             var d = Vector2.Distance(from, miraDoorLogPos);
             if (d <= range)
@@ -316,8 +312,8 @@ public static class HackerSystem
             }
             return false;
         }
-        
-        // For other maps, try to find the console
+
+
         var sc = FindDoorLogConsole();
         if (sc == null)
         {
@@ -337,13 +333,13 @@ public static class HackerSystem
 
     public static SystemConsole? FindCameraConsole()
     {
-        // Return cached value if available and still valid
+
         if (_cachedCameraConsole != null && _cachedCameraConsole.gameObject != null && _cachedCameraConsole.gameObject.activeInHierarchy)
         {
             return _cachedCameraConsole;
         }
-        
-        // Invalidate if cached object is destroyed
+
+
         _cachedCameraConsole = null;
 
         var mapId = (ExpandedMapNames)GameOptionsManager.Instance.currentNormalGameOptions.MapId;
@@ -393,7 +389,7 @@ public static class HackerSystem
         {
             return _cachedDoorLogConsole;
         }
-        
+
         _cachedDoorLogConsole = null;
 
         var consoles = GetCachedSystemConsoles();
@@ -435,7 +431,7 @@ public static class HackerSystem
     /// </summary>
     private static SystemConsole[] GetCachedSystemConsoles()
     {
-        // Refresh cache once per frame if needed
+
         if (_cachedSystemConsoles == null || Time.frameCount != _cachedConsoleFrame)
         {
             _cachedSystemConsoles = FindAllSystemConsoles();

@@ -12,14 +12,17 @@ public static class MirageDecoyLifecyclePatches
     [HarmonyPostfix]
     public static void MeetingStartPostfix()
     {
-        if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost)
-        {
-            return;
-        }
+
+
 
         foreach (var pc in PlayerControl.AllPlayerControls)
         {
             if (pc == null || pc.Data?.Role is not MirageRole)
+            {
+                continue;
+            }
+
+            if (!pc.AmOwner)
             {
                 continue;
             }

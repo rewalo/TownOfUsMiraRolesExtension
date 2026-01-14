@@ -9,7 +9,7 @@ public static class VentTrapSystem
 {
     private sealed record TrapEntry(byte OwnerId, int RoundsRemaining);
 
-    // ventId -> trap info
+
     private static readonly Dictionary<int, TrapEntry> Traps = new();
 
     public static bool TryGetTraprId(int ventId, out byte traprId)
@@ -84,7 +84,15 @@ public static class VentTrapSystem
             return;
         }
 
-        var toRemove = Traps.Where(kvp => kvp.Value.OwnerId == traprId).Select(kvp => kvp.Key).ToList();
+        var toRemove = new List<int>();
+        foreach (var kvp in Traps)
+        {
+            if (kvp.Value.OwnerId == traprId)
+            {
+                toRemove.Add(kvp.Key);
+            }
+        }
+
         foreach (var ventId in toRemove)
         {
             Traps.Remove(ventId);

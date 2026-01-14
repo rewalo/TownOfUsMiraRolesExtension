@@ -1,22 +1,21 @@
 using Il2CppInterop.Runtime.Attributes;
-using InnerNet;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
 using Reactor.Networking.Attributes;
-using TownOfUs.Assets;
-using TownOfUs.Modifiers.Neutral;
-using TownOfUs.Roles;
-using TownOfUs.Utilities;
+using TouMiraRolesExtension.Assets;
 using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Networking;
 using TouMiraRolesExtension.Options.Roles.Impostor;
-using TouMiraRolesExtension.Assets;
-using UnityEngine;
+using TownOfUs.Assets;
 using TownOfUs.Extensions;
+using TownOfUs.Modifiers.Neutral;
 using TownOfUs.Modules.Localization;
 using TownOfUs.Modules.Wiki;
+using TownOfUs.Roles;
+using TownOfUs.Utilities;
+using UnityEngine;
 
 namespace TouMiraRolesExtension.Roles.Impostor;
 
@@ -137,8 +136,15 @@ public sealed class WitchRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsRo
         }
 
 
-        var witch = PlayerControl.AllPlayerControls.ToArray()
-            .FirstOrDefault(p => p != null && p.IsRole<WitchRole>());
+        PlayerControl? witch = null;
+        foreach (var pc in PlayerControl.AllPlayerControls)
+        {
+            if (pc != null && pc.IsRole<WitchRole>())
+            {
+                witch = pc;
+                break;
+            }
+        }
 
         if (witch == null || witch.Data == null)
         {
@@ -247,7 +253,7 @@ public sealed class WitchRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsRo
     [MethodRpc((uint)ExtensionRpc.WitchClearAllSpellbound)]
     public static void RpcWitchClearAllSpellbound(PlayerControl sender)
     {
-        foreach (var player in PlayerControl.AllPlayerControls.ToArray())
+        foreach (var player in PlayerControl.AllPlayerControls)
         {
             if (player == null || !player.HasModifier<WitchSpellboundModifier>())
             {

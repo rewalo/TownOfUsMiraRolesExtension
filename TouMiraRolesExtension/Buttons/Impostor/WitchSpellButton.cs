@@ -1,21 +1,17 @@
 using MiraAPI.GameOptions;
-using MiraAPI.Networking;
-using MiraAPI.Utilities.Assets;
-using TouMiraRolesExtension.Roles.Impostor;
-using TouMiraRolesExtension.Options.Roles.Impostor;
-using TouMiraRolesExtension.Networking;
-using TouMiraRolesExtension.Assets;
-using TouMiraRolesExtension.Modifiers;
-using TownOfUs.Utilities;
-using TownOfUs.Assets;
-using TownOfUs.Buttons;
+using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Modifiers;
-using TownOfUs.Modifiers;
-using TownOfUs.Roles.Crewmate;
-using UnityEngine;
+using MiraAPI.Utilities.Assets;
+using TouMiraRolesExtension.Assets;
+using TouMiraRolesExtension.Modifiers;
+using TouMiraRolesExtension.Options.Roles.Impostor;
+using TouMiraRolesExtension.Roles.Impostor;
+using TownOfUs.Buttons;
 using TownOfUs.Modules.Localization;
-using MiraAPI.Hud;
+using TownOfUs.Roles.Crewmate;
+using TownOfUs.Utilities;
+using UnityEngine;
 
 namespace TouMiraRolesExtension.Buttons.Impostor;
 

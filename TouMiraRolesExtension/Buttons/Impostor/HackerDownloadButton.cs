@@ -22,7 +22,7 @@ public sealed class HackerDownloadButton : TownOfUsRoleButton<HackerRole>
     private const float DisplayNameUpdateInterval = 0.25f;
     public override string Name => TouLocale.GetParsed("ExtensionRoleHackerDownload", "Download");
 
-    public override BaseKeybind Keybind => Keybinds.SecondaryAction; // F (portable-equipment key)
+    public override BaseKeybind Keybind => Keybinds.SecondaryAction;
     public override Color TextOutlineColor => TouExtensionColors.Hacker;
     public override float Cooldown => 0.5f;
     public override LoadableAsset<Sprite> Sprite => TouExtensionImpAssets.HackerDownloadButtonSprite;

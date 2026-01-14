@@ -1,11 +1,8 @@
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using MiraAPI.Hud;
 using System.Reflection;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Roles.Crewmate;
-using MiraAPI.Hud;
 using TownOfUs.Buttons;
 using TownOfUs.Utilities;
 using UnityEngine;
@@ -14,7 +11,7 @@ namespace TouMiraRolesExtension.Patches;
 
 public static class MirageDecoyTownOfUsTargetButtonPatches
 {
-    // Same motivation as MirageDecoyTownOfUsButtonPatches: patch the base handlers directly.
+
     [HarmonyPatch(typeof(TownOfUsTargetButton<PlayerControl>), nameof(TownOfUsTargetButton<PlayerControl>.ClickHandler))]
     private static class PlayerTargetClickHandlerPatch
     {

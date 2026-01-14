@@ -1,11 +1,11 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities.Assets;
+using TouMiraRolesExtension.Options.Modifiers;
 using TownOfUs.Modifiers.Game;
 using TownOfUs.Modules.Localization;
 using TownOfUs.Modules.Wiki;
 using TownOfUs.Roles.Crewmate;
 using TownOfUs.Utilities;
-using TouMiraRolesExtension.Options.Modifiers;
 using UnityEngine;
 
 namespace TouMiraRolesExtension.Modifiers.Universal;

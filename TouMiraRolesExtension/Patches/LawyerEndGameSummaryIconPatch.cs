@@ -1,10 +1,10 @@
 using HarmonyLib;
-using TownOfUs;
-using TownOfUs.Patches;
+using MiraAPI.Modifiers;
 using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Modules;
+using TownOfUs;
+using TownOfUs.Patches;
 using static TownOfUs.Patches.EndGamePatches;
-using MiraAPI.Modifiers;
 
 namespace TouMiraRolesExtension.Patches;
 
@@ -24,7 +24,7 @@ public static class LawyerEndGameSummaryIconPatch
 
         if (lawyerIds.Count == 0 && clientIds.Count == 0)
         {
-            foreach (var pc in PlayerControl.AllPlayerControls.ToArray())
+            foreach (var pc in PlayerControl.AllPlayerControls)
             {
                 if (pc == null)
                 {

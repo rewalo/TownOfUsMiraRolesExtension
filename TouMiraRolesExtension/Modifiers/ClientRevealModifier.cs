@@ -30,14 +30,14 @@ public sealed class ClientRevealModifier : RevealModifier
         base.OnActivate();
         if (RevealRole && ShownRole == null)
         {
-            ShownRole = _role ?? (Player.Data?.Role as RoleBehaviour);
+            ShownRole = _role ?? (Player.Data?.Role);
         }
     }
 
     public override void FixedUpdate()
     {
         base.FixedUpdate();
-        
+
         var localPlayer = PlayerControl.LocalPlayer;
         if (localPlayer == null)
         {
@@ -56,7 +56,7 @@ public sealed class ClientRevealModifier : RevealModifier
             Visible = false;
             return;
         }
-        
+
         var options = OptionGroupSingleton<LawyerOptions>.Instance;
         Visible = options?.CanSeeClientRole == true;
     }

@@ -1,9 +1,12 @@
-using Il2CppInterop.Runtime.Attributes;
 using AmongUs.GameOptions;
+using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
 using Reactor.Networking.Attributes;
+using Reactor.Networking.Rpc;
+using Reactor.Utilities;
+using System.Collections;
 using TouMiraRolesExtension.Assets;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Networking;
@@ -15,9 +18,6 @@ using TownOfUs.Modules.Wiki;
 using TownOfUs.Roles;
 using TownOfUs.Utilities;
 using UnityEngine;
-using Reactor.Networking.Rpc;
-using Reactor.Utilities;
-using System.Collections;
 
 namespace TouMiraRolesExtension.Roles.Impostor;
 
@@ -164,7 +164,7 @@ public sealed class HackerRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsR
     {
         HackerSystem.ActivateJam(durationSeconds);
 
-        // Play sound only for the hacker who activated jam
+
         var localPlayer = PlayerControl.LocalPlayer;
         if (localPlayer != null && localPlayer.PlayerId == hackerId && IsHackerRole(localPlayer))
         {

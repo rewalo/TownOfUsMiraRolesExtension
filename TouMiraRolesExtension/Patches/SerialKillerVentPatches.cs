@@ -1,13 +1,13 @@
 using HarmonyLib;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Modules;
-using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Options.Roles.Neutral;
+using TouMiraRolesExtension.Roles.Neutral;
+using TownOfUs.Roles;
 using TownOfUs.Utilities;
 using UnityEngine;
-using TouMiraRolesExtension.Modifiers;
-using MiraAPI.Modifiers;
-using MiraAPI.GameOptions;
-using TownOfUs.Roles;
 
 
 namespace TouMiraRolesExtension.Patches;
@@ -54,7 +54,7 @@ public static class SerialKillerVentPatches
         {
             VentOccupancySystem.SetOccupant(ventId, 0);
         }
-        
+
         if (player.AmOwner && player.IsRole<SerialKillerRole>())
         {
             SerialKillerVentKillSystem.ClearForPlayer(player.PlayerId);
@@ -69,8 +69,8 @@ public static class SerialKillerVentPatches
     private static void CheckForSerialKillerInVent(Vent vent, PlayerControl enteringPlayer)
     {
         var localPlayer = PlayerControl.LocalPlayer;
-        if (localPlayer == null || localPlayer.PlayerId == enteringPlayer.PlayerId || 
-            !localPlayer.IsRole<SerialKillerRole>() || localPlayer.HasModifier<SerialKillerNoVentModifier>() || 
+        if (localPlayer == null || localPlayer.PlayerId == enteringPlayer.PlayerId ||
+            !localPlayer.IsRole<SerialKillerRole>() || localPlayer.HasModifier<SerialKillerNoVentModifier>() ||
             !localPlayer.inVent || localPlayer.HasDied())
         {
             return;
@@ -90,7 +90,7 @@ public static class SerialKillerVentPatches
     private static void CheckSerialKillerVentTargets(int ventId)
     {
         var localPlayer = PlayerControl.LocalPlayer;
-        if (localPlayer == null || !localPlayer.IsRole<SerialKillerRole>() || 
+        if (localPlayer == null || !localPlayer.IsRole<SerialKillerRole>() ||
             localPlayer.HasModifier<SerialKillerNoVentModifier>() || !localPlayer.inVent || localPlayer.HasDied())
         {
             return;
@@ -124,7 +124,7 @@ public static class SerialKillerVentPatches
         }
 
         var options = OptionGroupSingleton<SerialKillerOptions>.Instance;
-        
+
         PlayerControl? target = null;
         foreach (var player in PlayerControl.AllPlayerControls)
         {
@@ -169,7 +169,7 @@ public static class SerialKillerVentPatches
             {
                 continue;
             }
-            
+
             if (VentOccupancySystem.TryGetOccupant(vent.Id, out var occupantId) && occupantId == player.PlayerId)
             {
                 return vent.Id;

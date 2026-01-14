@@ -1,12 +1,12 @@
 using MiraAPI.Modifiers.Types;
+using MiraAPI.Networking;
 using TMPro;
-using TownOfUs.Utilities;
 using TownOfUs.Assets;
+using TownOfUs.Modules.Localization;
+using TownOfUs.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
-using TownOfUs.Modules.Localization;
-using MiraAPI.Networking;
 
 namespace TouMiraRolesExtension.Modifiers;
 
@@ -20,7 +20,7 @@ public sealed class SerialKillerManiacModifier(float timerDuration, float cooldo
     private GameObject? maniacUI;
     private float soundTimer = 1f;
     private bool hasMadeFirstKill;
-    
+
     public override string ModifierName => TouLocale.Get("ExtensionModifierSerialKillerManiac", "Maniac");
     public override float Duration => timerDuration;
     public override bool AutoStart => false;
@@ -77,8 +77,8 @@ public sealed class SerialKillerManiacModifier(float timerDuration, float cooldo
 
     public override void FixedUpdate()
     {
-        // Important: don't tick the underlying TimedModifier during meetings.
-        // Guessing can cause murders during meetings, and we never want the Maniac timer to advance (or complete) there.
+
+
         if (!Player.AmOwner || Player.HasDied() || MeetingHud.Instance)
         {
             soundTimer = 1f;
@@ -106,7 +106,7 @@ public sealed class SerialKillerManiacModifier(float timerDuration, float cooldo
             return;
         }
 
-        // Only tick the timer when it's actually allowed to run.
+
         base.FixedUpdate();
 
         var roundedTime = (int)Math.Round(Math.Max(TimeRemaining, 0f), 0f);
