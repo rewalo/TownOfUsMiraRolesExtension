@@ -29,6 +29,7 @@ using TownOfUs.Events;
 using TownOfUs.Extensions;
 using TownOfUs.Modifiers;
 using TownOfUs.Modifiers.Game;
+using TownOfUs.Modifiers.Game.Alliance;
 using TownOfUs.Modifiers.Neutral;
 using TownOfUs.Modules;
 using TownOfUs.Modules.Localization;
@@ -108,6 +109,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                         pc.HasModifier<ExecutionerTargetModifier>() ||
                         pc.HasModifier<GuardianAngelTargetModifier>() ||
                         pc.HasModifier<AllianceGameModifier>() ||
+                        pc.HasModifier<LoverModifier>() ||
                         SpectatorRole.TrackedSpectators.Contains(pc.Data.PlayerName) ||
                         assignedClients.Contains(pc.PlayerId))
                     {
@@ -132,6 +134,7 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                         pc.HasModifier<ExecutionerTargetModifier>() ||
                         pc.HasModifier<GuardianAngelTargetModifier>() ||
                         pc.HasModifier<AllianceGameModifier>() ||
+                        pc.HasModifier<LoverModifier>() ||
                         SpectatorRole.TrackedSpectators.Contains(pc.Data.PlayerName) ||
                         assignedClients.Contains(pc.PlayerId))
                     {
