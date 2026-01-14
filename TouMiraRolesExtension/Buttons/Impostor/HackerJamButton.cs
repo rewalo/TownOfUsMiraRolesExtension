@@ -24,6 +24,41 @@ public sealed class HackerJamButton : TownOfUsRoleButton<HackerRole>
     public override LoadableAsset<Sprite> Sprite => TouExtensionImpAssets.HackerJamButtonSprite;
     public override bool ZeroIsInfinite { get; set; } = true;
 
+    public override void CreateButton(Transform parent)
+    {
+        base.CreateButton(parent);
+        EnsureChargesInitialized();
+    }
+
+    private void EnsureChargesInitialized()
+    {
+        var player = PlayerControl.LocalPlayer;
+        if (player == null || player.Data?.Role == null)
+        {
+            return;
+        }
+
+        // Only initialize for Hacker role
+        if (!(player.Data.Role is HackerRole))
+        {
+            return;
+        }
+
+        var opts = OptionGroupSingleton<HackerOptions>.Instance;
+        if (opts.JamMaxCharges <= 0f)
+        {
+            return;
+        }
+
+        // Only initialize if charges are 0 (not yet set or after ResetAll)
+        if (HackerSystem.GetJamCharges(player.PlayerId) == 0)
+        {
+            var max = (int)opts.JamMaxCharges;
+            var initial = (byte)Mathf.Clamp((int)opts.InitialJamCharges, 0, Math.Max(0, max));
+            HackerSystem.SetJamCharges(player.PlayerId, initial);
+        }
+    }
+
     public override bool Enabled(RoleBehaviour? role)
     {
         return base.Enabled(role) && OptionGroupSingleton<HackerOptions>.Instance.JamEnabled;
@@ -58,6 +93,8 @@ public sealed class HackerJamButton : TownOfUsRoleButton<HackerRole>
         {
             return;
         }
+
+        EnsureChargesInitialized();
 
         var charges = HackerSystem.GetJamCharges(PlayerControl.LocalPlayer.PlayerId);
         Button.usesRemainingText.gameObject.SetActive(true);
