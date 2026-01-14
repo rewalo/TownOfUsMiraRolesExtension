@@ -8,6 +8,8 @@ using TouMiraRolesExtension.Utilities;
 using MiraAPI.Utilities;
 using MiraAPI.GameOptions;
 using TouMiraRolesExtension.Options.Roles.Neutral;
+using TownOfUs.Modules;
+using TownOfUs.Roles;
 
 namespace TouMiraRolesExtension.Patches.WinConditions;
 
@@ -24,15 +26,29 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
 
     public bool BlocksOthers => true;
 
+    private static bool ClientHasWonAlone(PlayerControl client)
+    {
+        if (client == null || client.HasDied())
+        {
+            return false;
+        }
+
+        var clientRole = client.GetRoleWhenAlive();
+        if (clientRole is ITownOfUsRole townOfUsRole)
+        {
+            return townOfUsRole.WinConditionMet();
+        }
+
+        return false;
+    }
+
     public bool IsMet(LogicGameFlowNormal gameFlow)
     {
-        // Only the host can decide game end.
         if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
         {
             return false;
         }
 
-        // Only force LawyerGameOver when Lawyer is configured to steal/override the win.
         if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
         {
             return false;
@@ -68,6 +84,11 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
                 continue;
             }
 
+            if (ClientHasWonAlone(client))
+            {
+                continue;
+            }
+
             return true;
         }
 
@@ -76,13 +97,11 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
 
     public void TriggerGameOver(LogicGameFlowNormal gameFlow)
     {
-        // Only the host can decide game end.
         if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
         {
             return;
         }
 
-        // Only force LawyerGameOver when Lawyer is configured to steal/override the win.
         if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
         {
             return;

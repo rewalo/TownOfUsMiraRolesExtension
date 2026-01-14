@@ -155,11 +155,13 @@ public sealed class WitchRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsRo
             .Where(p => p != null && p.Data != null && p.HasModifier<WitchSpellboundModifier>())
             .Select(p =>
             {
-                var mod = p.GetModifier<WitchSpellboundModifier>();
+                var mod = p?.GetModifier<WitchSpellboundModifier>();
+                if (mod == null) return null;
                 var meetingsSinceSpell = currentMeetingCount - mod.SpellCastMeeting;
                 var meetingsRemaining = meetingsUntilDeath - meetingsSinceSpell;
                 return new { Player = p, MeetingsRemaining = meetingsRemaining };
             })
+            .Where(x => x != null)
             .ToList();
 
         if (newlySpellboundPlayers.Count == 0)
@@ -177,12 +179,13 @@ public sealed class WitchRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsRo
 
             var playerList = string.Join("\n", newlySpellboundPlayers.Select(sp =>
             {
+                if (sp?.Player?.Data == null) return string.Empty;
                 var remainingInt = Mathf.RoundToInt(sp.MeetingsRemaining);
                 var remainingText = remainingInt <= 0
                     ? "They will die after this meeting"
                     : $"They have {remainingInt} meetings left";
                 return $"  <color=#{witchColor}>{sp.Player.Data.PlayerName}</color>: {remainingText}";
-            }));
+            }).Where(s => !string.IsNullOrEmpty(s)));
 
 
             var baseMessage = TouLocale.GetParsed("ExtensionWitchSpellNotificationMultiple",
@@ -197,7 +200,8 @@ public sealed class WitchRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsRo
         else
         {
 
-            var sp = newlySpellboundPlayers.First();
+            var sp = newlySpellboundPlayers[0];
+            if (sp?.Player?.Data == null) return;
             var remainingInt = Mathf.RoundToInt(sp.MeetingsRemaining);
             var baseMessage = TouLocale.GetParsed("ExtensionWitchSpellNotification",
                 $"&lt;player&gt; has been cursed! They have &lt;meetings&gt; meeting(s) left. Vote out or kill the Witch to save them!");

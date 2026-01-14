@@ -26,6 +26,8 @@ namespace TouMiraRolesExtension.Patches;
 [HarmonyPatch(typeof(PlayerRoleTextExtensions), nameof(PlayerRoleTextExtensions.UpdateTargetSymbols))]
 public static class LawyerTargetIndicatorPatch
 {
+    private const string Symbol = "§";
+
     [HarmonyPostfix]
     public static void UpdateTargetSymbolsPostfix(ref string __result, PlayerControl player, bool hidden = false)
     {
@@ -36,12 +38,28 @@ public static class LawyerTargetIndicatorPatch
 
         var genOpt = OptionGroupSingleton<GeneralOptions>.Instance;
         var localPlayer = PlayerControl.LocalPlayer;
+        var lawyerColor = TownOfUsColors.Lawyer.ToHtmlStringRGBA();
 
-        // Check if this player is the SPECIFIC client of the local lawyer
+        // Check if local player is a lawyer and this is their client
         if (localPlayer.IsRole<LawyerRole>() && 
             LawyerUtils.IsClientOfLawyer(player, localPlayer.PlayerId))
         {
-            __result += $"<color=#{TownOfUsColors.Lawyer.ToHtmlStringRGBA()}> L</color>";
+            __result += $"<color=#{lawyerColor}> {Symbol}</color>";
+            return;
+        }
+
+        // Check if local player is a client and this is their lawyer
+        if (LawyerUtils.IsClientOfAnyLawyer(localPlayer))
+        {
+            var lawyers = LawyerUtils.GetAllLawyersForClient(localPlayer);
+            foreach (var lawyerRole in lawyers)
+            {
+                if (lawyerRole.Player != null && lawyerRole.Player.PlayerId == player.PlayerId)
+                {
+                    __result += $"<color=#{lawyerColor}> {Symbol}</color>";
+                    return;
+                }
+            }
         }
 
         // For dead players, show indicator if they can see any lawyer/client relationship
@@ -54,7 +72,7 @@ public static class LawyerTargetIndicatorPatch
             
             if (wasLawyerOfThisClient || wasClientOfThisLawyer)
             {
-                __result += $"<color=#{TownOfUsColors.Lawyer.ToHtmlStringRGBA()}> L</color>";
+                __result += $"<color=#{lawyerColor}> {Symbol}</color>";
             }
         }
     }

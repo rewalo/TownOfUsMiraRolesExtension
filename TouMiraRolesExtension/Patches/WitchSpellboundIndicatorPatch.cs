@@ -164,7 +164,7 @@ public static class WitchSpellboundIndicatorPatch
         }
 
 
-        var perp = new Vector2(-direction.y, direction.x);
+        var perp = new Vector2(x: -direction.y, y: direction.x);
         var offset1 = localPos + perp * 0.3f;
         var offset2 = localPos - perp * 0.3f;
 

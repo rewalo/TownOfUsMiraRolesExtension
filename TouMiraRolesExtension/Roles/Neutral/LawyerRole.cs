@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Text.RegularExpressions;
 using AmongUs.GameOptions;
@@ -47,7 +48,7 @@ using Reactor.Utilities.Extensions;
 namespace TouMiraRolesExtension.Roles.Neutral;
 
 public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRole, IWikiDiscoverable, IDoomable,
-    IAssignableTargets, ICrewVariant
+    IAssignableTargets, ICrewVariant, IDisposable
 {
     private const float NoObjectLastSeconds = 20f;
     private static readonly Regex SecondsRegex = new(@"(\d+)\s*s", RegexOptions.IgnoreCase);
@@ -316,9 +317,14 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
 
         if (Player.AmOwner)
         {
-            meetingMenu?.Dispose();
-            meetingMenu = null;
+            Dispose();
         }
+    }
+
+    public void Dispose()
+    {
+        meetingMenu?.Dispose();
+        meetingMenu = null;
     }
 
     public override void OnMeetingStart()

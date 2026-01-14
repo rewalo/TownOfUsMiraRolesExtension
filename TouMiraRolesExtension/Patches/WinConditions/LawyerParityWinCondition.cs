@@ -9,6 +9,7 @@ using TouMiraRolesExtension.Utilities;
 using MiraAPI.Utilities;
 using MiraAPI.GameOptions;
 using TouMiraRolesExtension.Options.Roles.Neutral;
+using TownOfUs.Modules;
 
 namespace TouMiraRolesExtension.Patches.WinConditions;
 
@@ -27,20 +28,32 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
 
     private static bool IsKillerClient(PlayerControl client)
     {
-        // "Killer client" means a parity scenario where the Lawyer+Client duo should be able to close out the game.
-        // We intentionally do NOT treat crewmate-killers (e.g. Sheriff) as "killer clients" here.
         return client != null && (client.IsImpostorAligned() || client.Is(RoleAlignment.NeutralKilling));
+    }
+
+    private static bool ClientHasWonAlone(PlayerControl client)
+    {
+        if (client == null || client.HasDied())
+        {
+            return false;
+        }
+
+        var clientRole = client.GetRoleWhenAlive();
+        if (clientRole is ITownOfUsRole townOfUsRole)
+        {
+            return townOfUsRole.WinConditionMet();
+        }
+
+        return false;
     }
 
     public bool IsMet(LogicGameFlowNormal gameFlow)
     {
-        // Only the host can decide game end.
         if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
         {
             return false;
         }
 
-        // Only force LawyerGameOver when Lawyer is configured to steal/override the win.
         if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
         {
             return false;
@@ -102,6 +115,13 @@ public sealed class LawyerParityWinCondition : IWinCondition, IWinConditionWithB
 
             if (!alivePlayers.Any(ap => ap.PlayerId == lawyerPc.PlayerId) ||
                 !alivePlayers.Any(ap => ap.PlayerId == client.PlayerId))
+            {
+                continue;
+            }
+
+            // If the client has already won on their own (e.g., Serial Killer), don't trigger Lawyer win.
+            // Let the neutral win condition handle it instead.
+            if (ClientHasWonAlone(client))
             {
                 continue;
             }

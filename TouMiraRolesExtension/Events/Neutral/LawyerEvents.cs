@@ -98,7 +98,7 @@ public static class LawyerEvents
             return;
         }
 
-        if (PlayerControl.LocalPlayer.Data.Role is not LawyerRole lawyer)
+        if (PlayerControl.LocalPlayer.Data.Role is not LawyerRole)
         {
             return;
         }

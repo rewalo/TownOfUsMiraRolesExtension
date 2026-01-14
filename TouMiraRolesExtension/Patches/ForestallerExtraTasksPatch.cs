@@ -128,14 +128,7 @@ public static class ForestallerExtraTasksPatch
             return;
         }
 
-        var available = new List<byte>(pool.Count);
-        foreach (var b in pool)
-        {
-            if (!used.Contains(b))
-            {
-                available.Add(b);
-            }
-        }
+        var available = pool.Where(b => !used.Contains(b)).ToList();
 
         var rng = new System.Random(Guid.NewGuid().GetHashCode());
         while (count > 0 && available.Count > 0)

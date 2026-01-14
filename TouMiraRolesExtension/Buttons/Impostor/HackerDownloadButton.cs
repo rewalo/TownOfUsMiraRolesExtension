@@ -17,6 +17,9 @@ public sealed class HackerDownloadButton : TownOfUsRoleButton<HackerRole>
     private bool _isDownloading;
     private float _accumulatedSeconds;
     private float _lastUpdateTime;
+    private float _lastDisplayNameUpdate;
+    private string _cachedDisplayName = string.Empty;
+    private const float DisplayNameUpdateInterval = 0.25f;
     public override string Name => TouLocale.GetParsed("ExtensionRoleHackerDownload", "Download");
 
     public override BaseKeybind Keybind => Keybinds.SecondaryAction; // F (portable-equipment key)
@@ -69,7 +72,14 @@ public sealed class HackerDownloadButton : TownOfUsRoleButton<HackerRole>
             return;
         }
 
-        OverrideName(BuildDisplayName(player));
+        var now = Time.time;
+        if (now - _lastDisplayNameUpdate >= DisplayNameUpdateInterval)
+        {
+            _cachedDisplayName = BuildDisplayName(player);
+            _lastDisplayNameUpdate = now;
+        }
+
+        OverrideName(_cachedDisplayName);
 
         if (MeetingHud.Instance)
         {
@@ -103,7 +113,7 @@ public sealed class HackerDownloadButton : TownOfUsRoleButton<HackerRole>
             return;
         }
 
-        var now = Time.time;
+        now = Time.time;
         if (_lastUpdateTime <= 0f)
         {
             _lastUpdateTime = now;
@@ -171,6 +181,7 @@ public sealed class HackerDownloadButton : TownOfUsRoleButton<HackerRole>
         _isDownloading = false;
         _accumulatedSeconds = 0f;
         _lastUpdateTime = 0f;
+        _lastDisplayNameUpdate = 0f;
         if (resetTimer)
         {
             Timer = Cooldown;

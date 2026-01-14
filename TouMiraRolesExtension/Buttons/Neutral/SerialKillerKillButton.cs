@@ -32,7 +32,7 @@ public sealed class SerialKillerKillButton : TownOfUsKillRoleButton<SerialKiller
             {
                 return maniacMod.CooldownDuration;
             }
-            return player.GetKillCooldown();
+            return player?.GetKillCooldown() ?? 0f;
         }
     }
     public override LoadableAsset<Sprite> Sprite => TouAssets.KillSprite;

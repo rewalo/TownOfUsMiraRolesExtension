@@ -30,7 +30,7 @@ public sealed class HackerJamButton : TownOfUsRoleButton<HackerRole>
         EnsureChargesInitialized();
     }
 
-    private void EnsureChargesInitialized()
+    private static void EnsureChargesInitialized()
     {
         var player = PlayerControl.LocalPlayer;
         if (player == null || player.Data?.Role == null)
@@ -38,7 +38,6 @@ public sealed class HackerJamButton : TownOfUsRoleButton<HackerRole>
             return;
         }
 
-        // Only initialize for Hacker role
         if (!(player.Data.Role is HackerRole))
         {
             return;
@@ -50,7 +49,6 @@ public sealed class HackerJamButton : TownOfUsRoleButton<HackerRole>
             return;
         }
 
-        // Only initialize if charges are 0 (not yet set or after ResetAll)
         if (HackerSystem.GetJamCharges(player.PlayerId) == 0)
         {
             var max = (int)opts.JamMaxCharges;

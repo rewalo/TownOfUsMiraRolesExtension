@@ -79,20 +79,15 @@ public static class MirageDecoySystem
         CosmeticsLayer? bestCosmetics = null;
         SpriteRenderer? bestBody = null;
 
-        foreach (var kvp in ActiveByMirage)
+        foreach (var decoy in ActiveByMirage.Values.Where(d => d.IsVisible))
         {
-            if (!kvp.Value.IsVisible)
-            {
-                continue;
-            }
-
-            var fake = kvp.Value.Fake;
+            var fake = decoy.Fake;
             if (fake.body == null)
             {
                 continue;
             }
 
-            var p = kvp.Value.WorldPosition;
+            var p = decoy.WorldPosition;
             var v2 = new Vector2(p.x, p.y);
             var d = Vector2.Distance(from, v2);
             if (d > maxDistance || d >= bestDist)
@@ -173,7 +168,7 @@ public static class MirageDecoySystem
             }
         }
 
-        return bestDist != float.MaxValue;
+        return bestDist < float.MaxValue;
     }
 
     public static bool TryGetActivePosition(byte mirageId, out Vector2 pos)
@@ -370,5 +365,4 @@ public static class MirageDecoySystem
             tmp.color = c;
         }
     }
-
 }

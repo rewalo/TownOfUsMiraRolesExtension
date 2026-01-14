@@ -131,12 +131,9 @@ public sealed class MirageRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsR
             TouAudio.PlaySound(TouExtensionAudio.DecoyDestroySound);
         }
 
-        if (MirageDecoySystem.TryRemoveDecoy(mirage.PlayerId, out _))
+        if (MirageDecoySystem.TryRemoveDecoy(mirage.PlayerId, out _) && mirage.AmOwner)
         {
-            if (mirage.AmOwner)
-            {
-                Buttons.Crewmate.MirageDecoyButton.LocalInstance?.StartCooldownAndReset();
-            }
+            Buttons.Crewmate.MirageDecoyButton.LocalInstance?.StartCooldownAndReset();
         }
     }
 

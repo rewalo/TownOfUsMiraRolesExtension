@@ -92,6 +92,7 @@ public static class WraithLanternSystem
 
     public static void UpdateHost()
     {
+        // Intentionally empty - host updates are handled elsewhere
     }
 
     private static void TryCopyVentRenderSettings(SpriteRenderer targetRenderer, out float zAxis)
@@ -122,21 +123,15 @@ public static class WraithLanternSystem
 
     private static void ClearAllVisuals()
     {
-        foreach (var kvp in ActiveVisuals)
+        foreach (var visual in ActiveVisuals.Values.Where(v => v != null))
         {
-            if (kvp.Value != null)
-            {
-                Object.Destroy(kvp.Value);
-            }
+            Object.Destroy(visual);
         }
         ActiveVisuals.Clear();
 
-        foreach (var go in BrokenVisuals)
+        foreach (var go in BrokenVisuals.Where(g => g != null))
         {
-            if (go != null)
-            {
-                Object.Destroy(go);
-            }
+            Object.Destroy(go);
         }
         BrokenVisuals.Clear();
     }

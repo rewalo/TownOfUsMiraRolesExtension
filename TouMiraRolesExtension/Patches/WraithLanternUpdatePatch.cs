@@ -8,5 +8,6 @@ public static class WraithLanternUpdatePatch
 {
     public static void Postfix()
     {
+        // Intentionally empty - this patch is used for Harmony registration only
     }
 }

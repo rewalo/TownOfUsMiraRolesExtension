@@ -21,6 +21,7 @@ public sealed class HackerDeviceButton : TownOfUsRoleButton<HackerRole>
     private Minigame? _minigame;
     private VitalsMinigame? _vitals;
     private bool _usingAdminMap;
+    private HackerInfoSource? _lastLockedSource; // Nullable to track if we've initialized
 
     public override string Name => TouLocale.GetParsed("ExtensionRoleHackerDevice", "Device");
     public override BaseKeybind Keybind => OptionGroupSingleton<HackerOptions>.Instance.SimpleModeJamOnly
@@ -74,7 +75,13 @@ public sealed class HackerDeviceButton : TownOfUsRoleButton<HackerRole>
             return;
         }
 
-        UpdateDeviceSprite();
+        // Only update sprite when the locked source changes (or on first run)
+        var currentLockedSource = HackerSystem.GetLockedSource(player.PlayerId);
+        if (!_lastLockedSource.HasValue || currentLockedSource != _lastLockedSource.Value)
+        {
+            UpdateDeviceSprite();
+            _lastLockedSource = currentLockedSource;
+        }
 
         // Keep charges/battery visible.
         var battery = HackerSystem.GetBatterySeconds(player.PlayerId);
