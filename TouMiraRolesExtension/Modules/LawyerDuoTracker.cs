@@ -48,18 +48,4 @@ public static class LawyerDuoTracker
     {
         return ClientToLawyers.Keys.ToArray();
     }
-
-    /// <summary>
-    /// Gets lawyer IDs for a given client ID.
-    /// </summary>
-    /// <param name="clientId">The client's PlayerId</param>
-    /// <returns>Collection of lawyer IDs, or empty if client not found</returns>
-    public static IReadOnlyCollection<byte> GetLawyersForClient(byte clientId)
-    {
-        if (ClientToLawyers.TryGetValue(clientId, out var lawyers))
-        {
-            return lawyers.ToArray();
-        }
-        return Array.Empty<byte>();
-    }
 }

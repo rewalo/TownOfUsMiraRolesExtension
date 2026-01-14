@@ -19,7 +19,6 @@ using System.Text.RegularExpressions;
 using TouMiraRolesExtension.Assets;
 using TouMiraRolesExtension.GameOver;
 using TouMiraRolesExtension.Modifiers;
-using TouMiraRolesExtension.Events.Neutral;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Networking;
 using TouMiraRolesExtension.Options.Roles.Neutral;
@@ -796,10 +795,6 @@ public sealed class LawyerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsRo
                 BecomeOptions.Mercenary => RoleId.Get<MercenaryRole>(),
                 _ => (ushort)RoleTypes.Crewmate
             };
-
-            // Record TimeLord event for role change
-            var clientId = Client?.PlayerId ?? byte.MaxValue;
-            TimeLordLawyerEventHandlers.RecordLawyerRoleChange(Player, clientId, roleType);
 
             Player.ChangeRole(roleType);
 
