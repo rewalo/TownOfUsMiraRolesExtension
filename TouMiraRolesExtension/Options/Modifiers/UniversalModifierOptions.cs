@@ -2,7 +2,6 @@ using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
-using TownOfUs.Modules.Localization;
 using CluelessCensorTypeEnum = TouMiraRolesExtension.Options.Modifiers.CluelessCensorType;
 
 namespace TouMiraRolesExtension.Options.Modifiers;

@@ -1,14 +1,13 @@
-using System.Collections.Generic;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
+using TMPro;
+using TouMiraRolesExtension.Assets;
 using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Options.Roles.Impostor;
 using TouMiraRolesExtension.Roles.Impostor;
-using TouMiraRolesExtension.Assets;
 using TownOfUs.Patches;
 using TownOfUs.Utilities;
-using TMPro;
 using UnityEngine;
 
 namespace TouMiraRolesExtension.Patches;

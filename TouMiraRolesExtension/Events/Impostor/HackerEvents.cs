@@ -1,16 +1,12 @@
-using InnerNet;
 using AmongUs.GameOptions;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
-using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Options.Roles.Impostor;
 using TouMiraRolesExtension.Roles.Impostor;
-using TownOfUs.Utilities;
-using UnityEngine;
 
 namespace TouMiraRolesExtension.Events.Impostor;
 
@@ -41,28 +37,17 @@ public static class HackerEvents
     [RegisterEvent]
     public static void RoundStartEventHandler(RoundStartEvent @event)
     {
-        if (@event.TriggeredByIntro)
+        if (!@event.TriggeredByIntro)
         {
-            HackerSystem.ResetAll();
-
-            if (AmongUsClient.Instance != null && AmongUsClient.Instance.AmHost && PlayerControl.LocalPlayer != null)
-            {
-                var opts = OptionGroupSingleton<HackerOptions>.Instance;
-                var max = (int)opts.JamMaxCharges;
-                var initial = (byte)Mathf.Clamp((int)opts.InitialJamCharges, 0, Math.Max(0, max));
-
-                foreach (var p in PlayerControl.AllPlayerControls.ToArray())
-                {
-                    if (!IsHackerRole(p))
-                    {
-                        continue;
-                    }
-
-                    HackerSystem.SetJamCharges(p.PlayerId, initial);
-                    HackerRole.RpcHackerSetJamCharges(PlayerControl.LocalPlayer, p.PlayerId, initial);
-                }
-            }
+            return;
         }
+
+        if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost || PlayerControl.LocalPlayer == null)
+        {
+            return;
+        }
+
+        HackerSystem.ResetAll();
     }
 
     [RegisterEvent]

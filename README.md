@@ -13,7 +13,8 @@ This extension mod:
 6. **Adds** the **Witch** role (impostor power role that curses players)
 7. **Adds** the **Serial Killer** role (neutral killing role)
 8. **Adds** the **Mirage** role (crewmate support role that places decoys)
-9. **Adds** the **Clueless** modifier
+9. **Adds** the **Hacker** role (impostor support role that downloads system information and jams comms)
+10. **Adds** the **Clueless** modifier
 
 ### Roles
 - **Revealer** (Crewmate, renamed from Trapper): Place traps around the map to reveal roles of players who stay in them long enough.
@@ -24,6 +25,7 @@ This extension mod:
 - **Witch** (Impostor Power): Cast spells on players to curse them. Spellbound players are highlighted in the next meeting and die after a configured amount of meetings. If the Witch dies, gets exiled, or is guessed, all spellbound players survive.
 - **Serial Killer** (Neutral Killing): Kill everyone to win alone. Can optionally kill players who are in vents with them, but loses the ability to vent for the rest of the game after doing so.
 - **Mirage** (Crewmate Support): Place a decoy with the appearance of a chosen target (yourself or a random player). If any player interacts with the decoy, it disappears instantly and both the Mirage and the toucher receive a notification. Cannot be guessed if the decoy has the appearance of yourself.
+- **Hacker** (Impostor Support): Download information from nearby equipment (Admin/Cams/Vitals/Door Log) to charge a portable device. Use the device anywhere to access the downloaded system. Jam disrupts information systems like comms being sabotaged, but emergency meetings can still be called. Gain jam charges from kills.
 
 ### Modifiers
 - **Clueless** (Universal): Removes all task guidance (task list, task arrows/markers, and map task locations). Tasks still function normally and contribute to the task bar.

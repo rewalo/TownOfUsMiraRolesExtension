@@ -30,7 +30,6 @@ public static class HackerMoveWithDevicePatch
             HackerDeviceButton.IsPortableDeviceOpen)
         {
             __result = __instance.moveable;
-            return;
         }
     }
 }

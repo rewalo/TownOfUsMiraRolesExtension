@@ -38,7 +38,15 @@ public static class VentOccupancySystem
 
     public static void ClearForPlayer(byte playerId)
     {
-        var toRemove = VentOccupants.Where(kvp => kvp.Value == playerId).Select(kvp => kvp.Key).ToList();
+        var toRemove = new List<int>();
+        foreach (var kvp in VentOccupants)
+        {
+            if (kvp.Value == playerId)
+            {
+                toRemove.Add(kvp.Key);
+            }
+        }
+
         foreach (var ventId in toRemove)
         {
             VentOccupants.Remove(ventId);

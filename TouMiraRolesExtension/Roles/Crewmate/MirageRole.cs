@@ -4,8 +4,8 @@ using MiraAPI.Modifiers;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
-using Reactor.Utilities;
 using Reactor.Networking.Attributes;
+using Reactor.Utilities;
 using TouMiraRolesExtension.Assets;
 using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Modules;
@@ -131,12 +131,9 @@ public sealed class MirageRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsR
             TouAudio.PlaySound(TouExtensionAudio.DecoyDestroySound);
         }
 
-        if (MirageDecoySystem.TryRemoveDecoy(mirage.PlayerId, out _))
+        if (MirageDecoySystem.TryRemoveDecoy(mirage.PlayerId, out _) && mirage.AmOwner)
         {
-            if (mirage.AmOwner)
-            {
-                Buttons.Crewmate.MirageDecoyButton.LocalInstance?.StartCooldownAndReset();
-            }
+            Buttons.Crewmate.MirageDecoyButton.LocalInstance?.StartCooldownAndReset();
         }
     }
 

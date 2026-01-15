@@ -1,7 +1,7 @@
-using System.Globalization;
 using MiraAPI.GameOptions;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
+using System.Globalization;
 using TouMiraRolesExtension.Assets;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Options.Roles.Impostor;
@@ -16,13 +16,46 @@ public sealed class HackerJamButton : TownOfUsRoleButton<HackerRole>
 {
     public override string Name => TouLocale.GetParsed("ExtensionRoleHackerJam", "Jam");
     public override BaseKeybind Keybind => OptionGroupSingleton<HackerOptions>.Instance.SimpleModeJamOnly
-        ? Keybinds.SecondaryAction // F in simple mode
-        : Keybinds.ModifierAction; // I when not in simple mode
+        ? Keybinds.SecondaryAction
+        : Keybinds.ModifierAction;
     public override Color TextOutlineColor => TouExtensionColors.Hacker;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<HackerOptions>.Instance.JamCooldownSeconds + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<HackerOptions>.Instance.JamDurationSeconds;
     public override LoadableAsset<Sprite> Sprite => TouExtensionImpAssets.HackerJamButtonSprite;
     public override bool ZeroIsInfinite { get; set; } = true;
+
+    public override void CreateButton(Transform parent)
+    {
+        base.CreateButton(parent);
+        EnsureChargesInitialized();
+    }
+
+    private static void EnsureChargesInitialized()
+    {
+        var player = PlayerControl.LocalPlayer;
+        if (player == null || player.Data?.Role == null)
+        {
+            return;
+        }
+
+        if (!(player.Data.Role is HackerRole))
+        {
+            return;
+        }
+
+        var opts = OptionGroupSingleton<HackerOptions>.Instance;
+        if (opts.JamMaxCharges <= 0f)
+        {
+            return;
+        }
+
+        if (HackerSystem.GetJamCharges(player.PlayerId) == 0)
+        {
+            var max = (int)opts.JamMaxCharges;
+            var initial = (byte)Mathf.Clamp((int)opts.InitialJamCharges, 0, Math.Max(0, max));
+            HackerSystem.SetJamCharges(player.PlayerId, initial);
+        }
+    }
 
     public override bool Enabled(RoleBehaviour? role)
     {
@@ -58,6 +91,8 @@ public sealed class HackerJamButton : TownOfUsRoleButton<HackerRole>
         {
             return;
         }
+
+        EnsureChargesInitialized();
 
         var charges = HackerSystem.GetJamCharges(PlayerControl.LocalPlayer.PlayerId);
         Button.usesRemainingText.gameObject.SetActive(true);

@@ -1,13 +1,15 @@
 using MiraAPI.GameEnd;
-using TownOfUs.Interfaces;
-using TownOfUs.Utilities;
+using MiraAPI.GameOptions;
+using MiraAPI.Utilities;
 using TouMiraRolesExtension.GameOver;
 using TouMiraRolesExtension.Modules;
+using TouMiraRolesExtension.Options.Roles.Neutral;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
-using MiraAPI.Utilities;
-using MiraAPI.GameOptions;
-using TouMiraRolesExtension.Options.Roles.Neutral;
+using TownOfUs.Interfaces;
+using TownOfUs.Modules;
+using TownOfUs.Roles;
+using TownOfUs.Utilities;
 
 namespace TouMiraRolesExtension.Patches.WinConditions;
 
@@ -19,20 +21,34 @@ namespace TouMiraRolesExtension.Patches.WinConditions;
 /// </summary>
 public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBlocking
 {
-    // Run after most neutral conditions, but before crew/impostor style checks.
+
     public int Priority => 12;
 
     public bool BlocksOthers => true;
 
+    private static bool ClientHasWonAlone(PlayerControl client)
+    {
+        if (client == null || client.HasDied())
+        {
+            return false;
+        }
+
+        var clientRole = client.GetRoleWhenAlive();
+        if (clientRole is ITownOfUsRole townOfUsRole)
+        {
+            return townOfUsRole.WinConditionMet();
+        }
+
+        return false;
+    }
+
     public bool IsMet(LogicGameFlowNormal gameFlow)
     {
-        // Only the host can decide game end.
         if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
         {
             return false;
         }
 
-        // Only force LawyerGameOver when Lawyer is configured to steal/override the win.
         if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
         {
             return false;
@@ -49,7 +65,7 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
             return false;
         }
 
-        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls)
         {
             if (lawyerPc == null || lawyerPc.HasDied() || !lawyerPc.IsRole<LawyerRole>())
             {
@@ -62,8 +78,13 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
                 continue;
             }
 
-            if (!alivePlayers.Any(ap => ap.PlayerId == lawyerPc.PlayerId) ||
-                !alivePlayers.Any(ap => ap.PlayerId == client.PlayerId))
+            var alivePlayerIds = alivePlayers.Select(ap => ap.PlayerId).ToHashSet();
+            if (!alivePlayerIds.Contains(lawyerPc.PlayerId) || !alivePlayerIds.Contains(client.PlayerId))
+            {
+                continue;
+            }
+
+            if (ClientHasWonAlone(client))
             {
                 continue;
             }
@@ -76,13 +97,11 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
 
     public void TriggerGameOver(LogicGameFlowNormal gameFlow)
     {
-        // Only the host can decide game end.
         if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost)
         {
             return;
         }
 
-        // Only force LawyerGameOver when Lawyer is configured to steal/override the win.
         if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
         {
             return;
@@ -97,7 +116,7 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
 
         var winners = new HashSet<NetworkedPlayerInfo>();
 
-        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls)
         {
             if (lawyerPc == null || lawyerPc.HasDied() || !lawyerPc.IsRole<LawyerRole>())
             {
@@ -115,8 +134,8 @@ public sealed class LawyerDuoWinCondition : IWinCondition, IWinConditionWithBloc
                 continue;
             }
 
-            if (!alivePlayers.Any(ap => ap.PlayerId == lawyerPc.PlayerId) ||
-                !alivePlayers.Any(ap => ap.PlayerId == client.PlayerId))
+            var alivePlayerIds = alivePlayers.Select(ap => ap.PlayerId).ToHashSet();
+            if (!alivePlayerIds.Contains(lawyerPc.PlayerId) || !alivePlayerIds.Contains(client.PlayerId))
             {
                 continue;
             }

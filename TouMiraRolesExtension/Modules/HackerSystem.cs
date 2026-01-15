@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-using AmongUs.GameOptions;
 using Il2CppInterop.Runtime;
-using InnerNet;
 using TownOfUs.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -24,6 +20,11 @@ public static class HackerSystem
     private static readonly Dictionary<byte, HackerInfoSource> LockedSourceByPlayer = new();
     private static readonly Dictionary<byte, float> BatterySecondsByPlayer = new();
     private static readonly Dictionary<byte, byte> JamChargesByPlayer = new();
+    private static SystemConsole[]? _cachedSystemConsoles;
+    private static MapConsole[]? _cachedMapConsoles;
+    private static SystemConsole? _cachedCameraConsole;
+    private static SystemConsole? _cachedDoorLogConsole;
+    private static int _cachedConsoleFrame = -1;
 
     public static float JamActiveUntil { get; private set; }
 
@@ -38,6 +39,7 @@ public static class HackerSystem
         BatterySecondsByPlayer.Clear();
         JamChargesByPlayer.Clear();
         JamActiveUntil = 0f;
+        InvalidateConsoleCache();
     }
 
     /// <summary>
@@ -48,6 +50,19 @@ public static class HackerSystem
         LockedSourceByPlayer.Clear();
         BatterySecondsByPlayer.Clear();
         JamActiveUntil = 0f;
+        InvalidateConsoleCache();
+    }
+
+    /// <summary>
+    /// Invalidates cached console lookups. Call when map changes or consoles may have been destroyed.
+    /// </summary>
+    private static void InvalidateConsoleCache()
+    {
+        _cachedSystemConsoles = null;
+        _cachedMapConsoles = null;
+        _cachedCameraConsole = null;
+        _cachedDoorLogConsole = null;
+        _cachedConsoleFrame = -1;
     }
 
     public static HackerInfoSource GetLockedSource(byte playerId)
@@ -160,7 +175,6 @@ public static class HackerSystem
 
         if (TryGetDoorLogDistance(pos, range, out var dDoor) && dDoor < bestDist)
         {
-            bestDist = dDoor;
             best = HackerInfoSource.DoorLog;
         }
 
@@ -189,7 +203,15 @@ public static class HackerSystem
     private static bool TryGetAdminDistance(Vector2 from, float range, out float dist)
     {
         dist = float.MaxValue;
-        var consoles = Object.FindObjectsOfType<MapConsole>();
+
+
+        if (_cachedMapConsoles == null || Time.frameCount != _cachedConsoleFrame)
+        {
+            _cachedMapConsoles = Object.FindObjectsOfType<MapConsole>();
+            _cachedConsoleFrame = Time.frameCount;
+        }
+
+        var consoles = _cachedMapConsoles;
         if (consoles == null || consoles.Length == 0)
         {
             return false;
@@ -210,13 +232,15 @@ public static class HackerSystem
             }
         }
 
-        return dist != float.MaxValue;
+        return dist < float.MaxValue;
     }
 
     private static bool TryGetVitalsDistance(Vector2 from, float range, out float dist)
     {
         dist = float.MaxValue;
-        var consoles = Object.FindObjectsOfType<SystemConsole>();
+
+
+        var consoles = GetCachedSystemConsoles();
         if (consoles == null || consoles.Length == 0)
         {
             return false;
@@ -242,7 +266,7 @@ public static class HackerSystem
             }
         }
 
-        return dist != float.MaxValue;
+        return dist < float.MaxValue;
     }
 
     private static bool TryGetCameraDistance(Vector2 from, float range, out float dist)
@@ -268,17 +292,17 @@ public static class HackerSystem
     private static bool TryGetDoorLogDistance(Vector2 from, float range, out float dist)
     {
         dist = float.MaxValue;
-        
-        // Special handling for Mira HQ: use hardcoded position
+
+
         var mapId = (ExpandedMapNames)GameOptionsManager.Instance.currentNormalGameOptions.MapId;
         if (TutorialManager.InstanceExists)
         {
             mapId = (ExpandedMapNames)AmongUsClient.Instance.TutorialMapId;
         }
-        
+
         if (mapId is ExpandedMapNames.MiraHq)
         {
-            // Mira HQ doorlog position
+
             var miraDoorLogPos = new Vector2(15.9f, 4.8f);
             var d = Vector2.Distance(from, miraDoorLogPos);
             if (d <= range)
@@ -288,8 +312,8 @@ public static class HackerSystem
             }
             return false;
         }
-        
-        // For other maps, try to find the console
+
+
         var sc = FindDoorLogConsole();
         if (sc == null)
         {
@@ -309,59 +333,81 @@ public static class HackerSystem
 
     public static SystemConsole? FindCameraConsole()
     {
+
+        if (_cachedCameraConsole != null && _cachedCameraConsole.gameObject != null && _cachedCameraConsole.gameObject.activeInHierarchy)
+        {
+            return _cachedCameraConsole;
+        }
+
+
+        _cachedCameraConsole = null;
+
         var mapId = (ExpandedMapNames)GameOptionsManager.Instance.currentNormalGameOptions.MapId;
         if (TutorialManager.InstanceExists)
         {
             mapId = (ExpandedMapNames)AmongUsClient.Instance.TutorialMapId;
         }
 
-        var consoles = FindAllSystemConsoles();
+        var consoles = GetCachedSystemConsoles();
         if (consoles == null || consoles.Length == 0)
         {
             return null;
         }
 
+        SystemConsole? result = null;
         if (mapId is ExpandedMapNames.Airship)
         {
-            return consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("task_cams"));
+            result = consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("task_cams"));
         }
-
-        if (mapId is ExpandedMapNames.Skeld or ExpandedMapNames.Dleks)
+        else if (mapId is ExpandedMapNames.Skeld or ExpandedMapNames.Dleks)
         {
-            return consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("SurvConsole"));
+            result = consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("SurvConsole"));
         }
-
-        if (mapId is ExpandedMapNames.MiraHq)
+        else if (mapId is ExpandedMapNames.MiraHq)
         {
-            return consoles.FirstOrDefault(IsDoorLogConsole) ??
-                   consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("SurvLogConsole"));
+            result = consoles.FirstOrDefault(IsDoorLogConsole) ??
+                     consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("SurvLogConsole"));
         }
-
-        if (mapId is ExpandedMapNames.Submerged)
+        else if (mapId is ExpandedMapNames.Submerged)
         {
-            return consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("SecurityConsole"));
+            result = consoles.FirstOrDefault(x => x != null && x.gameObject.name.Contains("SecurityConsole"));
+        }
+        else
+        {
+            result = consoles.FirstOrDefault(x =>
+                x != null && (x.gameObject.name.Contains("Surv_Panel") || x.name.Contains("Cam") ||
+                              x.name.Contains("BinocularsSecurityConsole")));
         }
 
-        return consoles.FirstOrDefault(x =>
-            x != null && (x.gameObject.name.Contains("Surv_Panel") || x.name.Contains("Cam") ||
-                          x.name.Contains("BinocularsSecurityConsole")));
+        _cachedCameraConsole = result;
+        return result;
     }
 
     public static SystemConsole? FindDoorLogConsole()
     {
-        var consoles = FindAllSystemConsoles();
+        if (_cachedDoorLogConsole != null && _cachedDoorLogConsole.gameObject != null && _cachedDoorLogConsole.gameObject.activeInHierarchy)
+        {
+            return _cachedDoorLogConsole;
+        }
+
+        _cachedDoorLogConsole = null;
+
+        var consoles = GetCachedSystemConsoles();
         if (consoles == null || consoles.Length == 0)
         {
             return null;
         }
 
-        return consoles.FirstOrDefault(IsDoorLogConsole) ??
-               consoles.FirstOrDefault(x =>
-                   x != null &&
-                   (x.gameObject.name.Contains("DoorLog", System.StringComparison.OrdinalIgnoreCase) ||
-                    x.gameObject.name.Contains("SurvLogConsole", System.StringComparison.OrdinalIgnoreCase) ||
-                    x.gameObject.name.Contains("SurvLog", System.StringComparison.OrdinalIgnoreCase) ||
-                    x.name.Contains("DoorLog", System.StringComparison.OrdinalIgnoreCase)));
+        var result = consoles.FirstOrDefault(IsDoorLogConsole) ??
+                     consoles.FirstOrDefault(x =>
+                         x != null &&
+                         (x.gameObject.name.Contains("DoorLog", System.StringComparison.OrdinalIgnoreCase) ||
+                          x.gameObject.name.Contains("SurvLogConsole", System.StringComparison.OrdinalIgnoreCase) ||
+                          x.gameObject.name.Contains("SurvLog", System.StringComparison.OrdinalIgnoreCase) ||
+                          x.name.Contains("DoorLog", System.StringComparison.OrdinalIgnoreCase)));
+
+        _cachedDoorLogConsole = result;
+        return result;
     }
 
     private static bool IsDoorLogConsole(SystemConsole? console)
@@ -378,6 +424,21 @@ public static class HackerSystem
 
         return console.gameObject.name.Contains("SurvLogConsole", System.StringComparison.OrdinalIgnoreCase) ||
                console.gameObject.name.Contains("DoorLog", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Gets cached system consoles, refreshing the cache if needed. This avoids expensive FindObjectsOfType calls.
+    /// </summary>
+    private static SystemConsole[] GetCachedSystemConsoles()
+    {
+
+        if (_cachedSystemConsoles == null || Time.frameCount != _cachedConsoleFrame)
+        {
+            _cachedSystemConsoles = FindAllSystemConsoles();
+            _cachedConsoleFrame = Time.frameCount;
+        }
+
+        return _cachedSystemConsoles ?? System.Array.Empty<SystemConsole>();
     }
 
     private static SystemConsole[] FindAllSystemConsoles()

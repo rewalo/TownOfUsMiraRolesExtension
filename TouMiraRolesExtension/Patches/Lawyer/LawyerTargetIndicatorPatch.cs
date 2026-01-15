@@ -1,12 +1,10 @@
-using System.Text;
 using HarmonyLib;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
-using MiraAPI.Modifiers;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using Reactor.Utilities.Extensions;
-using TouMiraRolesExtension.Modifiers;
+using System.Text;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
 using TownOfUs;
@@ -26,6 +24,8 @@ namespace TouMiraRolesExtension.Patches;
 [HarmonyPatch(typeof(PlayerRoleTextExtensions), nameof(PlayerRoleTextExtensions.UpdateTargetSymbols))]
 public static class LawyerTargetIndicatorPatch
 {
+    private const string Symbol = "§";
+
     [HarmonyPostfix]
     public static void UpdateTargetSymbolsPostfix(ref string __result, PlayerControl player, bool hidden = false)
     {
@@ -36,25 +36,40 @@ public static class LawyerTargetIndicatorPatch
 
         var genOpt = OptionGroupSingleton<GeneralOptions>.Instance;
         var localPlayer = PlayerControl.LocalPlayer;
+        var lawyerColor = TownOfUsColors.Lawyer.ToHtmlStringRGBA();
 
-        // Check if this player is the SPECIFIC client of the local lawyer
-        if (localPlayer.IsRole<LawyerRole>() && 
+
+        if (localPlayer.IsRole<LawyerRole>() &&
             LawyerUtils.IsClientOfLawyer(player, localPlayer.PlayerId))
         {
-            __result += $"<color=#{TownOfUsColors.Lawyer.ToHtmlStringRGBA()}> L</color>";
+            __result += $"<color=#{lawyerColor}> {Symbol}</color>";
+            return;
         }
 
-        // For dead players, show indicator if they can see any lawyer/client relationship
+
+        if (LawyerUtils.IsClientOfAnyLawyer(localPlayer))
+        {
+            var lawyers = LawyerUtils.GetAllLawyersForClient(localPlayer);
+            if (lawyers
+                .Select(lawyerRole => lawyerRole.Player)
+                .Any(lawyerPlayer => lawyerPlayer != null && lawyerPlayer.PlayerId == player.PlayerId))
+            {
+                __result += $"<color=#{lawyerColor}> {Symbol}</color>";
+                return;
+            }
+        }
+
+
         if (localPlayer.HasDied() && genOpt != null && genOpt.TheDeadKnow && !hidden)
         {
-            // Check if dead player was a lawyer and this is their SPECIFIC client
+
             var wasLawyerOfThisClient = LawyerUtils.HasLawyerClientRelationship(localPlayer, player);
-            // Or if dead player was a client and this is their SPECIFIC lawyer
+
             var wasClientOfThisLawyer = LawyerUtils.IsClientOfLawyer(localPlayer, player.PlayerId);
-            
+
             if (wasLawyerOfThisClient || wasClientOfThisLawyer)
             {
-                __result += $"<color=#{TownOfUsColors.Lawyer.ToHtmlStringRGBA()}> L</color>";
+                __result += $"<color=#{lawyerColor}> {Symbol}</color>";
             }
         }
     }
@@ -77,14 +92,14 @@ public static class LawyerClientIntroPatch
             return;
         }
 
-        // Use LawyerUtils to get the SPECIFIC lawyer for this client
+
         var lawyers = LawyerUtils.GetAllLawyersForClient(localPlayer);
         if (lawyers.Count == 0)
         {
             return;
         }
 
-        // Use the first lawyer (in case of multiple, though there should typically be one)
+
         var lawyer = lawyers[0].Player;
 
         if (lawyer == null || lawyer.Data == null)
@@ -117,14 +132,14 @@ public static class LawyerClientIntroBeginPatch
             return;
         }
 
-        // Use LawyerUtils to get the SPECIFIC lawyer for this client
+
         var lawyers = LawyerUtils.GetAllLawyersForClient(localPlayer);
         if (lawyers.Count == 0)
         {
             return;
         }
 
-        // Use the first lawyer (in case of multiple, though there should typically be one)
+
         var lawyer = lawyers[0].Player;
 
         if (lawyer == null || lawyer.Data == null)
@@ -167,7 +182,7 @@ public static class LawyerKillerIntroPatch
             return true;
         }
 
-        // Use LawyerUtils to check if this client has a SPECIFIC lawyer
+
         var lawyers = LawyerUtils.GetAllLawyersForClient(localPlayer);
         if (lawyers.Count == 0)
         {
@@ -186,14 +201,14 @@ public static class LawyerKillerIntroPatch
             return;
         }
 
-        // Use LawyerUtils to get the SPECIFIC lawyer for this client
+
         var lawyers = LawyerUtils.GetAllLawyersForClient(localPlayer);
         if (lawyers.Count == 0)
         {
             return;
         }
 
-        // Use the first lawyer (in case of multiple, though there should typically be one)
+
         var lawyer = lawyers[0].Player;
 
         if (lawyer == null || lawyer.Data == null)
@@ -250,14 +265,14 @@ public static class LawyerNeutralKillerIntroPatch
             return;
         }
 
-        // Use LawyerUtils to get the SPECIFIC lawyer for this client
+
         var lawyers = LawyerUtils.GetAllLawyersForClient(localPlayer);
         if (lawyers.Count == 0)
         {
             return;
         }
 
-        // Use the first lawyer (in case of multiple, though there should typically be one)
+
         var lawyer = lawyers[0].Player;
 
         if (lawyer == null || lawyer.Data == null)
@@ -292,7 +307,7 @@ public static class LawyerNeutralKillerIntroPatch
             return;
         }
 
-        // Use LawyerUtils to check if this client has a SPECIFIC lawyer
+
         var lawyers = LawyerUtils.GetAllLawyersForClient(localPlayer);
         if (lawyers.Count == 0)
         {
@@ -317,7 +332,7 @@ public static class LawyerIntroBackgroundColorPatch
     public static void BeginCrewmatePostfix(IntroCutscene __instance)
     {
         var localPlayer = PlayerControl.LocalPlayer;
-        // Use LawyerUtils to check if this client has a SPECIFIC lawyer
+
         if (localPlayer == null || !LawyerUtils.IsClientOfAnyLawyer(localPlayer))
         {
             return;
@@ -357,20 +372,20 @@ public static class LawyerClientTabTextPatch
             return;
         }
 
-        // Use LawyerUtils to check if this client has a SPECIFIC lawyer
+
         if (!LawyerUtils.IsClientOfAnyLawyer(localPlayer))
         {
             return;
         }
 
-        // Use LawyerUtils to get the SPECIFIC lawyer for this client
+
         var lawyers = LawyerUtils.GetAllLawyersForClient(localPlayer);
         if (lawyers.Count == 0)
         {
             return;
         }
 
-        // Use the first lawyer (in case of multiple, though there should typically be one)
+
         var lawyer = lawyers[0].Player;
 
         if (lawyer == null || lawyer.Data == null)

@@ -1,15 +1,12 @@
-using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Keybinds;
 using MiraAPI.Networking;
 using MiraAPI.Utilities.Assets;
 using TouMiraRolesExtension.Roles.Impostor;
-using TownOfUs.Utilities;
 using TownOfUs.Assets;
 using TownOfUs.Buttons;
-using MiraAPI.Keybinds;
-using MiraAPI.Modifiers;
-using TownOfUs.Modifiers;
+using TownOfUs.Utilities;
 using UnityEngine;
-using MiraAPI.Hud;
 
 namespace TouMiraRolesExtension.Buttons.Impostor;
 
@@ -44,7 +41,7 @@ public sealed class WitchKillButton : TownOfUsKillRoleButton<WitchRole, PlayerCo
         }
 
         player.RpcCustomMurder(Target);
-        
+
         var spellButton = CustomButtonSingleton<WitchSpellButton>.Instance;
         if (spellButton != null)
         {

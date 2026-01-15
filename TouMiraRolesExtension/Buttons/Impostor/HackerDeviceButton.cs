@@ -21,11 +21,12 @@ public sealed class HackerDeviceButton : TownOfUsRoleButton<HackerRole>
     private Minigame? _minigame;
     private VitalsMinigame? _vitals;
     private bool _usingAdminMap;
+    private HackerInfoSource? _lastLockedSource;
 
     public override string Name => TouLocale.GetParsed("ExtensionRoleHackerDevice", "Device");
     public override BaseKeybind Keybind => OptionGroupSingleton<HackerOptions>.Instance.SimpleModeJamOnly
         ? Keybinds.SecondaryAction
-        : Keybinds.TertiaryAction; // U when not in simple mode
+        : Keybinds.TertiaryAction;
     public override Color TextOutlineColor => TouExtensionColors.Hacker;
     public override float Cooldown => 0.001f;
     public override LoadableAsset<Sprite> Sprite => TouExtensionImpAssets.HackerDeviceGenericSprite;
@@ -74,22 +75,28 @@ public sealed class HackerDeviceButton : TownOfUsRoleButton<HackerRole>
             return;
         }
 
-        UpdateDeviceSprite();
 
-        // Keep charges/battery visible.
+        var currentLockedSource = HackerSystem.GetLockedSource(player.PlayerId);
+        if (!_lastLockedSource.HasValue || currentLockedSource != _lastLockedSource.Value)
+        {
+            UpdateDeviceSprite();
+            _lastLockedSource = currentLockedSource;
+        }
+
+
         var battery = HackerSystem.GetBatterySeconds(player.PlayerId);
         Button.usesRemainingText.gameObject.SetActive(true);
         Button.usesRemainingSprite.gameObject.SetActive(true);
         Button.usesRemainingText.text = $"{Mathf.CeilToInt(battery)}s";
 
-        // If comms are down (real comms or Hacker Jam), mimic sabotage behavior by force-closing.
+
         if (player.AreCommsAffected())
         {
             CloseAll();
             return;
         }
 
-        // Close detection (player manually closed).
+
         if (_usingAdminMap && MapBehaviour.Instance != null && !MapBehaviour.Instance.gameObject.activeSelf)
         {
             _usingAdminMap = false;
@@ -131,7 +138,7 @@ public sealed class HackerDeviceButton : TownOfUsRoleButton<HackerRole>
             return;
         }
 
-        // Toggle off.
+
         if (_usingAdminMap || _minigame != null || _vitals != null)
         {
             CloseAll();
@@ -146,7 +153,7 @@ public sealed class HackerDeviceButton : TownOfUsRoleButton<HackerRole>
         var opts = OptionGroupSingleton<HackerOptions>.Instance;
         if (!opts.MoveWithDevice)
         {
-            // Match other "MoveWithMenu" toggles: if disabled, hard stop the player before opening.
+
             player.NetTransform.Halt();
         }
 

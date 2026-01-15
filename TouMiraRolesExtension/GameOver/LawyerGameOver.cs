@@ -1,17 +1,13 @@
 using MiraAPI.GameEnd;
 using MiraAPI.Utilities;
 using Reactor.Utilities.Extensions;
-using TownOfUs.Modules;
 using TouMiraRolesExtension.Roles.Neutral;
-using TouMiraRolesExtension.Modifiers;
 using TouMiraRolesExtension.Utilities;
-using UnityEngine;
-using Object = UnityEngine.Object;
-using TownOfUs.Modules.Localization;
 using TownOfUs;
+using TownOfUs.Modules;
+using TownOfUs.Modules.Localization;
 using TownOfUs.Utilities;
-using MiraAPI.Modifiers;
-using MiraAPI.Roles;
+using UnityEngine;
 
 namespace TouMiraRolesExtension.GameOver;
 
@@ -24,13 +20,17 @@ public sealed class LawyerGameOver : CustomGameOver
             return false;
         }
 
-        var winningLawyers = winners
-            .Select(w => w?.Object)
-            .Where(pc => pc != null && pc.IsRole<LawyerRole>())
-            .Cast<PlayerControl>()
-            .ToArray();
+        var winningLawyers = new List<PlayerControl>();
+        foreach (var w in winners)
+        {
+            var pc = w?.Object;
+            if (pc != null && pc.IsRole<LawyerRole>())
+            {
+                winningLawyers.Add(pc);
+            }
+        }
 
-        if (winningLawyers.Length == 0)
+        if (winningLawyers.Count == 0)
         {
             return false;
         }

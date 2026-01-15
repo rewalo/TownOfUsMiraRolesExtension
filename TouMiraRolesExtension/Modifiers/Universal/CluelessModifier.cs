@@ -1,11 +1,12 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities.Assets;
+using TouMiraRolesExtension.Options.Modifiers;
 using TownOfUs.Modifiers.Game;
 using TownOfUs.Modules.Localization;
 using TownOfUs.Modules.Wiki;
 using TownOfUs.Roles.Crewmate;
 using TownOfUs.Utilities;
-using TouMiraRolesExtension.Options.Modifiers;
+using TouMiraRolesExtension.Roles.Crewmate;
 using UnityEngine;
 
 namespace TouMiraRolesExtension.Modifiers.Universal;
@@ -50,7 +51,7 @@ public sealed class CluelessModifier : UniversalGameModifier, IWikiDiscoverable
 
     public override bool IsModifierValidOn(RoleBehaviour role)
     {
-        return base.IsModifierValidOn(role) && role is not SnitchRole;
+        return base.IsModifierValidOn(role) && role is not SnitchRole && role is not ForestallerRole;
     }
 
     public override void OnActivate()

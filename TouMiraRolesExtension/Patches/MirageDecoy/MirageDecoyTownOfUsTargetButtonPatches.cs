@@ -1,11 +1,8 @@
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using MiraAPI.Hud;
 using System.Reflection;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Roles.Crewmate;
-using MiraAPI.Hud;
 using TownOfUs.Buttons;
 using TownOfUs.Utilities;
 using UnityEngine;
@@ -14,7 +11,7 @@ namespace TouMiraRolesExtension.Patches;
 
 public static class MirageDecoyTownOfUsTargetButtonPatches
 {
-    // Same motivation as MirageDecoyTownOfUsButtonPatches: patch the base handlers directly.
+
     [HarmonyPatch(typeof(TownOfUsTargetButton<PlayerControl>), nameof(TownOfUsTargetButton<PlayerControl>.ClickHandler))]
     private static class PlayerTargetClickHandlerPatch
     {
@@ -72,6 +69,71 @@ public static class MirageDecoyTownOfUsTargetButtonPatches
             actionButton.SetEnabled();
             ForceActionButtonVisualEnabled(actionButton);
             MirageDecoySystem.UpdateLocalOutline(local.GetTruePosition(), distance, GetOutlineColor(__instance));
+        }
+
+        private static ActionButton? GetActionButton(object instance)
+        {
+            try
+            {
+                var prop = instance.GetType().GetProperty("Button", BindingFlags.Instance | BindingFlags.Public);
+                return prop?.GetValue(instance) as ActionButton;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static void ForceActionButtonVisualEnabled(ActionButton button)
+        {
+            try
+            {
+                var renderers = button.GetComponentsInChildren<SpriteRenderer>(true);
+                foreach (var sr in renderers)
+                {
+                    if (sr == null) continue;
+                    sr.color = Palette.EnabledColor;
+                    if (sr.material != null)
+                    {
+                        sr.material.SetFloat("_Desat", 0f);
+                    }
+                }
+
+                var tmps = button.GetComponentsInChildren<TMPro.TMP_Text>(true);
+                foreach (var tmp in tmps)
+                {
+                    if (tmp == null) continue;
+                    tmp.color = Palette.EnabledColor;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        private static Color GetOutlineColor(object buttonInstance)
+        {
+            try
+            {
+                var roleProp = buttonInstance.GetType().GetProperty("Role", BindingFlags.Instance | BindingFlags.Public);
+                var roleObj = roleProp?.GetValue(buttonInstance);
+                if (roleObj != null)
+                {
+                    var teamColorProp = roleObj.GetType().GetProperty("TeamColor", BindingFlags.Instance | BindingFlags.Public);
+                    var teamColorObj = teamColorProp?.GetValue(roleObj);
+                    if (teamColorObj is Color c)
+                    {
+                        return c;
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            return Palette.EnabledColor;
         }
     }
 
@@ -200,70 +262,5 @@ public static class MirageDecoyTownOfUsTargetButtonPatches
         }
 
         return 1.25f;
-    }
-
-    private static ActionButton? GetActionButton(object instance)
-    {
-        try
-        {
-            var prop = instance.GetType().GetProperty("Button", BindingFlags.Instance | BindingFlags.Public);
-            return prop?.GetValue(instance) as ActionButton;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static void ForceActionButtonVisualEnabled(ActionButton button)
-    {
-        try
-        {
-            var renderers = button.GetComponentsInChildren<SpriteRenderer>(true);
-            foreach (var sr in renderers)
-            {
-                if (sr == null) continue;
-                sr.color = Palette.EnabledColor;
-                if (sr.material != null)
-                {
-                    sr.material.SetFloat("_Desat", 0f);
-                }
-            }
-
-            var tmps = button.GetComponentsInChildren<TMPro.TMP_Text>(true);
-            foreach (var tmp in tmps)
-            {
-                if (tmp == null) continue;
-                tmp.color = Palette.EnabledColor;
-            }
-        }
-        catch
-        {
-            // ignore
-        }
-    }
-
-    private static Color GetOutlineColor(object buttonInstance)
-    {
-        try
-        {
-            var roleProp = buttonInstance.GetType().GetProperty("Role", BindingFlags.Instance | BindingFlags.Public);
-            var roleObj = roleProp?.GetValue(buttonInstance);
-            if (roleObj != null)
-            {
-                var teamColorProp = roleObj.GetType().GetProperty("TeamColor", BindingFlags.Instance | BindingFlags.Public);
-                var teamColorObj = teamColorProp?.GetValue(roleObj);
-                if (teamColorObj is Color c)
-                {
-                    return c;
-                }
-            }
-        }
-        catch
-        {
-            // ignore
-        }
-
-        return Palette.EnabledColor;
     }
 }

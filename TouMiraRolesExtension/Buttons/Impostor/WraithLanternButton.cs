@@ -23,20 +23,27 @@ public sealed class WraithLanternButton : TownOfUsRoleButton<WraithRole>
     private string _placeName = string.Empty;
     private string _returnName = string.Empty;
     private bool _isProcessingClick;
+    private bool _namesInitialized;
 
     private static bool CanPlaceLanternAt(PlayerControl player, Vector2 pos)
     {
-        // Similar to Miner/Sentry placement: require open space + no wall collision.
+
         var hits = Physics2D.OverlapBoxAll(pos, Vector2.one * 0.55f, 0);
-        hits = hits.Where(c =>
-                c != null &&
+        var filteredHits = new List<Collider2D>();
+        foreach (var c in hits)
+        {
+            if (c != null &&
                 c.gameObject.layer != 8 &&
                 c.gameObject.layer != 5 &&
                 player.Collider != null &&
                 c != player.Collider &&
                 !c.transform.IsChildOf(player.transform) &&
                 (c.name.Contains("Vent") || c.name.Contains("Door") || !c.isTrigger))
-            .ToArray();
+            {
+                filteredHits.Add(c);
+            }
+        }
+        hits = filteredHits.ToArray();
 
         var noWallConflict = player.Collider != null &&
                              !PhysicsHelpers.AnythingBetween(player.Collider,
@@ -91,7 +98,7 @@ public sealed class WraithLanternButton : TownOfUsRoleButton<WraithRole>
             return true;
         }
 
-        // Placing: don't allow dropping lanterns in/too near walls.
+
         if (PlayerControl.LocalPlayer != null)
         {
             var pos = PlayerControl.LocalPlayer.GetTruePosition();
@@ -146,7 +153,11 @@ public sealed class WraithLanternButton : TownOfUsRoleButton<WraithRole>
         }
 
         var hasActive = WraithLanternSystem.HasActive(PlayerControl.LocalPlayer.PlayerId);
-        EnsureNames();
+        if (!_namesInitialized)
+        {
+            EnsureNames();
+            _namesInitialized = true;
+        }
 
         if (hasActive)
         {

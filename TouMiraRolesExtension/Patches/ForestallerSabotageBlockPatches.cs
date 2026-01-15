@@ -32,7 +32,7 @@ public static class ForestallerSabotageBlockPatches
             return true;
         }
 
-        // UpdateSystem can be invoked for various sabotage-system messages; the sabotage *selection* is a single byte.
+
         if (reader == null || reader.BytesRemaining != 1)
         {
             return true;

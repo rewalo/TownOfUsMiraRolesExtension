@@ -3,7 +3,6 @@ using HarmonyLib;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Roles.Crewmate;
 using TownOfUs.Utilities;
-using UnityEngine;
 
 namespace TouMiraRolesExtension.Patches;
 

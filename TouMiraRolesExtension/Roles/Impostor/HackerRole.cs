@@ -1,22 +1,23 @@
-using Il2CppInterop.Runtime.Attributes;
 using AmongUs.GameOptions;
+using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
 using Reactor.Networking.Attributes;
+using Reactor.Networking.Rpc;
+using Reactor.Utilities;
+using System.Collections;
 using TouMiraRolesExtension.Assets;
 using TouMiraRolesExtension.Modules;
 using TouMiraRolesExtension.Networking;
 using TouMiraRolesExtension.Options.Roles.Impostor;
+using TownOfUs.Assets;
 using TownOfUs.Extensions;
 using TownOfUs.Modules.Localization;
 using TownOfUs.Modules.Wiki;
 using TownOfUs.Roles;
 using TownOfUs.Utilities;
 using UnityEngine;
-using Reactor.Networking.Rpc;
-using Reactor.Utilities;
-using System.Collections;
 
 namespace TouMiraRolesExtension.Roles.Impostor;
 
@@ -155,13 +156,20 @@ public sealed class HackerRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsR
         }
 
         RpcHackerSetJamCharges(host, hackerId, newCharges);
-        RpcHackerStartJam(host, durationSeconds);
+        RpcHackerStartJam(host, hackerId, durationSeconds);
     }
 
     [MethodRpc((uint)ExtensionRpc.HackerStartJam, LocalHandling = RpcLocalHandling.Before)]
-    public static void RpcHackerStartJam(PlayerControl sender, float durationSeconds)
+    public static void RpcHackerStartJam(PlayerControl sender, byte hackerId, float durationSeconds)
     {
         HackerSystem.ActivateJam(durationSeconds);
+
+
+        var localPlayer = PlayerControl.LocalPlayer;
+        if (localPlayer != null && localPlayer.PlayerId == hackerId && IsHackerRole(localPlayer))
+        {
+            TouAudio.PlaySound(TouExtensionAudio.HackerJamSound);
+        }
     }
 
     [MethodRpc((uint)ExtensionRpc.HackerSetJamCharges, LocalHandling = RpcLocalHandling.Before)]

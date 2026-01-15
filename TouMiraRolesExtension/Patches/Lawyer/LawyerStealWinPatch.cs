@@ -1,14 +1,14 @@
 using HarmonyLib;
 using MiraAPI.GameEnd;
-using TownOfUs.GameOver;
-using TownOfUs.Utilities;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
 using TouMiraRolesExtension.GameOver;
 using TouMiraRolesExtension.Modifiers;
+using TouMiraRolesExtension.Options.Roles.Neutral;
 using TouMiraRolesExtension.Roles.Neutral;
 using TouMiraRolesExtension.Utilities;
-using MiraAPI.Modifiers;
-using MiraAPI.GameOptions;
-using TouMiraRolesExtension.Options.Roles.Neutral;
+using TownOfUs.GameOver;
+using TownOfUs.Utilities;
 
 namespace TouMiraRolesExtension.Patches;
 
@@ -25,31 +25,31 @@ public static class LawyerStealWinPatch
     [HarmonyPrefix]
     public static bool Prefix(GameOverReason endReason)
     {
-        // Only the host can decide game end.
+
         if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost)
         {
             return true;
         }
 
-        // If configured to win alongside the client, do not override/steal the end-game.
+
         if (OptionGroupSingleton<LawyerOptions>.Instance.WinMode != LawyerWinMode.StealWin)
         {
             return true;
         }
 
-        // Prevent recursion when LawyerGameOver triggers its own end-game RPC.
+
         if (InProgress || endReason == CustomGameOver.GameOverReason<LawyerGameOver>())
         {
             return true;
         }
 
-        // Never steal forced host-abort end-games (host keybind).
+
         if (endReason == CustomGameOver.GameOverReason<HostGameOver>())
         {
             return true;
         }
 
-        // Draws aren't a "win" to steal.
+
         if (endReason == CustomGameOver.GameOverReason<DrawGameOver>())
         {
             return true;
@@ -58,7 +58,7 @@ public static class LawyerStealWinPatch
         var exiled = ExileController.Instance?.initData?.networkedPlayer?.Object;
 
         var winners = new HashSet<NetworkedPlayerInfo>();
-        foreach (var lawyerPc in PlayerControl.AllPlayerControls.ToArray())
+        foreach (var lawyerPc in PlayerControl.AllPlayerControls)
         {
             if (lawyerPc == null || !lawyerPc.IsRole<LawyerRole>())
             {

@@ -1,5 +1,4 @@
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Modifiers;
 using TouMiraRolesExtension.Utilities;
 using TownOfUs.Modifiers;
 
@@ -27,14 +26,14 @@ public sealed class LawyerRevealModifier : RevealModifier
         base.OnActivate();
         if (RevealRole && ShownRole == null)
         {
-            ShownRole = _role ?? (Player.Data?.Role as RoleBehaviour);
+            ShownRole = _role ?? (Player.Data?.Role);
         }
     }
 
     public override void FixedUpdate()
     {
         base.FixedUpdate();
-        
+
         var localPlayer = PlayerControl.LocalPlayer;
         if (localPlayer == null)
         {
@@ -42,7 +41,7 @@ public sealed class LawyerRevealModifier : RevealModifier
             return;
         }
 
-        // Use LawyerUtils to check if local player is a client of THIS SPECIFIC lawyer
+
         Visible = LawyerUtils.IsClientOfLawyer(localPlayer, Player.PlayerId);
     }
 }

@@ -15,9 +15,9 @@ public sealed class SerialKillerOptions : AbstractOptionGroup<SerialKillerRole>
     public bool CanReportBodies { get; set; } = false;
 
     [ModdedEnumOption("ExtensionOptionSerialKillerVentKillTargets", typeof(VentKillTargets),
-        ["ExtensionOptionSerialKillerVentKillTargetsEnumImpostors", 
-         "ExtensionOptionSerialKillerVentKillTargetsEnumImpNK", 
-         "ExtensionOptionSerialKillerVentKillTargetsEnumImpNeutrals", 
+        ["ExtensionOptionSerialKillerVentKillTargetsEnumImpostors",
+         "ExtensionOptionSerialKillerVentKillTargetsEnumImpNK",
+         "ExtensionOptionSerialKillerVentKillTargetsEnumImpNeutrals",
          "ExtensionOptionSerialKillerVentKillTargetsEnumAny"])]
     public VentKillTargets VentKillTargets { get; set; } = VentKillTargets.ImpNK;
 

@@ -2,9 +2,9 @@ using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
-using TownOfUs.Options.Roles.Neutral;
 using TouMiraRolesExtension.Roles.Neutral;
 using TownOfUs.Modules.Localization;
+using TownOfUs.Options.Roles.Neutral;
 
 namespace TouMiraRolesExtension.Options.Roles.Neutral;
 

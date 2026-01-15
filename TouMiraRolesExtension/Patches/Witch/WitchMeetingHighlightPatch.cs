@@ -2,7 +2,6 @@ using HarmonyLib;
 using MiraAPI.Modifiers;
 using TouMiraRolesExtension.Modifiers;
 using TownOfUs.Utilities;
-using UnityEngine;
 
 namespace TouMiraRolesExtension.Patches;
 

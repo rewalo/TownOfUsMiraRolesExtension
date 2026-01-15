@@ -5,13 +5,13 @@ namespace TouMiraRolesExtension.Assets;
 
 public static class TouExtensionImpAssets
 {
-    // THIS FILE SHOULD ONLY HOLD BUTTONS AND ROLE BANNERS, EVERYTHING ELSE BELONGS IN TouExtensionAssets.cs
+
     private const string ShortPath = "TouMiraRolesExtension.Resources.Buttons";
     private const string HackerPath = "TouMiraRolesExtension.Resources.Hacker";
     public static LoadableAsset<Sprite> SpellButtonSprite { get; } = new LoadableResourceAsset($"{ShortPath}.SpellButton.png");
     public static LoadableAsset<Sprite> LanternButtonSprite { get; } = new LoadableResourceAsset($"{ShortPath}.LanternButton.png");
 
-    // Hacker
+
     public static LoadableAsset<Sprite> HackerDownloadButtonSprite { get; } = new LoadableResourceAsset($"{HackerPath}.hackerdownload.png");
     public static LoadableAsset<Sprite> HackerJamButtonSprite { get; } = new LoadableResourceAsset($"{HackerPath}.HackerJam.png");
     public static LoadableAsset<Sprite> HackerDeviceGenericSprite { get; } = new LoadableResourceAsset($"{HackerPath}.evilcamera.png");

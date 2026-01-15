@@ -1,4 +1,3 @@
-using System.Globalization;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
@@ -9,14 +8,13 @@ using Reactor;
 using Reactor.Networking;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
-using TownOfUs;
-using TownOfUs.Patches;
+using System.Globalization;
+using System.Reflection;
 using TouMiraRolesExtension.Patches;
 using TouMiraRolesExtension.Patches.WinConditions;
-using System.Reflection;
-using System.Linq;
-using System.Collections.Generic;
 using TouMiraRolesExtension.Utilities;
+using TownOfUs;
+using TownOfUs.Patches;
 
 namespace TouMiraRolesExtension;
 
@@ -52,10 +50,10 @@ public partial class TouMiraRolesExtensionPlugin : BasePlugin, IMiraPlugin
     public override void Load()
     {
         ReactorCredits.Register("Tou Mira Roles Extension", Version, IsDevBuild, ReactorCredits.AlwaysShow);
-        IL2CPPChainloader.Instance.Finished += Modules.ExtensionLocale.SearchInternalLocale; // Initialise AFTER the mods are loaded to ensure maximum parity (no need for the soft dependency either then)
-        IL2CPPChainloader.Instance.Finished += LawyerTeamChatRegistration.Register; // Register lawyer team chat after mods are loaded
+        IL2CPPChainloader.Instance.Finished += Modules.ExtensionLocale.SearchInternalLocale;
+        IL2CPPChainloader.Instance.Finished += LawyerTeamChatRegistration.Register;
         PatchAllWithErrorHandling();
-        
+
         WinConditionRegistry.Register(new LawyerDuoWinCondition());
         WinConditionRegistry.Register(new LawyerParityWinCondition());
     }
@@ -85,7 +83,7 @@ public partial class TouMiraRolesExtensionPlugin : BasePlugin, IMiraPlugin
                 Error($"Failed to patch class: {type.FullName}");
                 Error($"Error type: {ex.GetType().FullName}");
                 Error($"Error message: {ex.Message}");
-                
+
                 if (ex.InnerException != null)
                 {
                     Error($"Inner exception: {ex.InnerException.GetType().FullName}: {ex.InnerException.Message}");
@@ -96,7 +94,7 @@ public partial class TouMiraRolesExtensionPlugin : BasePlugin, IMiraPlugin
         }
 
         Info($"Harmony patching completed: {successCount} classes patched successfully, {failCount} classes had errors");
-        
+
         if (failCount > 0)
         {
             Warning($"Failed to patch the following classes: {string.Join(", ", failedTypes)}");
@@ -106,7 +104,7 @@ public partial class TouMiraRolesExtensionPlugin : BasePlugin, IMiraPlugin
             Warning("  - Missing dependencies or incompatible mod versions");
             Warning("  - Methods that cannot be patched due to JIT compilation issues");
         }
-        
+
         if (successCount == 0 && failCount > 0)
         {
             Error("All Harmony patches failed! The mod cannot function without patches.");

@@ -1,6 +1,4 @@
-using System;
 using HarmonyLib;
-using System.Reflection;
 using TouMiraRolesExtension.Modules;
 using UnityEngine;
 using UnityEngine.UI;
@@ -56,12 +54,9 @@ public static class HackerJamMinigamePatches
         {
             if (cams.ViewPorts != null)
             {
-                foreach (var vp in cams.ViewPorts)
+                foreach (var vp in cams.ViewPorts.Where(v => v != null))
                 {
-                    if (vp != null)
-                    {
-                        vp.sharedMaterial = cams.StaticMaterial;
-                    }
+                    vp.sharedMaterial = cams.StaticMaterial;
                 }
             }
 
@@ -115,14 +110,14 @@ public static class HackerJamMinigamePatches
                     comp.gameObject.SetActive(active);
                     return;
                 case System.Collections.IEnumerable enumerable:
-                {
-                    foreach (var item in enumerable)
                     {
-                        TrySetActive(item, active);
-                    }
+                        foreach (var item in enumerable)
+                        {
+                            TrySetActive(item, active);
+                        }
 
-                    return;
-                }
+                        return;
+                    }
             }
         }
         catch
@@ -332,14 +327,10 @@ public static class HackerJamMinigamePatches
         }
     }
 
-    [HarmonyPatch]
+    [HarmonyPatch(typeof(PlanetSurveillanceMinigame), nameof(PlanetSurveillanceMinigame.NextCamera))]
     private static class PlanetSurveillanceMinigameNextCameraPatch
     {
-        private static MethodBase? TargetMethod()
-        {
-            return AccessTools.Method(typeof(PlanetSurveillanceMinigame), "NextCamera");
-        }
-
+        [HarmonyPrefix]
         private static bool Prefix(PlanetSurveillanceMinigame __instance, [HarmonyArgument(0)] int direction)
         {
             if (__instance == null)
@@ -374,9 +365,12 @@ public static class HackerJamMinigamePatches
 
                     __instance.Dots[__instance.currentCamera].sprite = __instance.DotEnabled;
 
-                    var survCamera = __instance.survCameras[__instance.currentCamera];
-                    __instance.Camera.transform.position = survCamera.transform.position + survCamera.Offset;
-                    __instance.LocationName.text = survCamera.CamName;
+                    var survCamera = __instance.survCameras?[__instance.currentCamera];
+                    if (survCamera != null)
+                    {
+                        __instance.Camera.transform.position = survCamera.transform.position + survCamera.Offset;
+                        __instance.LocationName.text = survCamera.CamName;
+                    }
                 }
                 catch
                 {
@@ -480,7 +474,7 @@ public static class HackerJamMinigamePatches
                     }
 
                     var name = child.name.ToLowerInvariant();
-                    if (name.Contains("content") || name.Contains("viewport") || 
+                    if (name.Contains("content") || name.Contains("viewport") ||
                         (name.Contains("scroll") && name.Contains("view")))
                     {
                         logContainer = child;
@@ -490,9 +484,9 @@ public static class HackerJamMinigamePatches
 
                 if (logContainer != null)
                 {
-                    foreach (Transform entry in logContainer)
+                    foreach (Il2CppSystem.Object entryObj in logContainer)
                     {
-                        if (entry != null && entry != logContainer && entry != sabTextTransform)
+                        if (entryObj.TryCast<Transform>() is { } entry && entry != logContainer && entry != sabTextTransform)
                         {
                             entry.gameObject.SetActive(false);
                         }
@@ -511,7 +505,6 @@ public static class HackerJamMinigamePatches
                     if (name.Contains("log") && (name.Contains("entry") || name.Contains("item") || name.Contains("row")))
                     {
                         child.gameObject.SetActive(false);
-                        continue;
                     }
                 }
             }
