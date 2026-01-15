@@ -193,7 +193,7 @@
 
   <!-- Mirage Role -->
   <string name="ExtensionRoleMirage">Mirage</string>
-  <string name="ExtensionRoleMirageIntroBlurb">Place a decoy to bait contact and reveal who touched it.</string>
+  <string name="ExtensionRoleMirageIntroBlurb">You got blam-boozled!</string>
   <string name="ExtensionRoleMirageTabDescription">Prime a decoy, then place it. If anyone interacts with it, it vanishes and you are notified.</string>
   <string name="ExtensionRoleMirageWikiDescription">The Mirage is a Crewmate Support role that can place a decoy with the appearance of a chosen target (yourself or a random player). If any player interacts with the decoy, it disappears instantly and both the Mirage and the toucher receive a notification. Note: Mirage cannot be guessed if the decoy has the appearance of yourself.</string>
   <string name="ExtensionRoleMirageDecoy">Decoy</string>

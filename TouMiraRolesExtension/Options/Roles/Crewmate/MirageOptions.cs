@@ -20,8 +20,8 @@ public sealed class MirageOptions : AbstractOptionGroup<MirageRole>
     [ModdedNumberOption("ExtensionOptionMirageDecoyCooldown", 1f, 60f, 1f, MiraNumberSuffixes.Seconds)]
     public float DecoyCooldown { get; set; } = 25f;
 
-    [ModdedNumberOption("ExtensionOptionMirageDecoyDuration", 0f, 60f, 1f, MiraNumberSuffixes.Seconds, "Off", true)]
-    public float DecoyDuration { get; set; } = 15f;
+    public ModdedNumberOption DecoyDuration { get; } =
+        new("ExtensionOptionMirageDecoyDuration", 15f, 0f, 60f, 1f, "Off", "#", MiraNumberSuffixes.Seconds, "0");
 
     [ModdedEnumOption("ExtensionOptionMirageDecoyType", typeof(MirageDecoyType),
         ["ExtensionOptionMirageDecoyTypeEnumMirage", "ExtensionOptionMirageDecoyTypeEnumRandomPlayer"])]

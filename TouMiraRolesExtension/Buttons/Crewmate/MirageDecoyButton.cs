@@ -37,7 +37,7 @@ public sealed class MirageDecoyButton : TownOfUsRoleButton<MirageRole>
     public override BaseKeybind Keybind => Keybinds.SecondaryAction;
     public override Color TextOutlineColor => TouExtensionColors.Mirage;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<MirageOptions>.Instance.DecoyCooldown + MapCooldown, 5f, 120f);
-    public override float EffectDuration => OptionGroupSingleton<MirageOptions>.Instance.DecoyDuration;
+    public override float EffectDuration => OptionGroupSingleton<MirageOptions>.Instance.DecoyDuration.Value;
     public override int MaxUses => (int)OptionGroupSingleton<MirageOptions>.Instance.InitialUses;
     public override LoadableAsset<Sprite> Sprite => TouExtensionCrewAssets.DecoyButtonSprite;
     public override bool ZeroIsInfinite { get; set; } = true;
@@ -206,7 +206,7 @@ public sealed class MirageDecoyButton : TownOfUsRoleButton<MirageRole>
             appearance,
             new Vector2(_primedWorldPos.x, _primedWorldPos.y),
             _primedWorldPos.z,
-            OptionGroupSingleton<MirageOptions>.Instance.DecoyDuration,
+            OptionGroupSingleton<MirageOptions>.Instance.DecoyDuration.Value,
             0f,
             false);
         _stage = Stage.Destroy;
